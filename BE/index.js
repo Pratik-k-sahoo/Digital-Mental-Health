@@ -24,6 +24,7 @@ app.use(
 		origin: [
 			"http://localhost:5173",
 			"https://zmhp4r3q-5173.inc1.devtunnels.ms",
+			"https://digital-mental-health.vercel.app",
 		],
 		credentials: true,
 	})
