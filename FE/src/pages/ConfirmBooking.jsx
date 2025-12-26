@@ -30,7 +30,6 @@ const ConfirmBooking = () => {
 		queryKey: ["appointments", "bookingDetails"],
 		queryFn: () => fetchBookingDetailsByToken(token),
 		enabled: !!token,
-		staleTime: 1 * 60 * 1000,
 	});
 
 	const [timer, setTimer] = useState(10);
