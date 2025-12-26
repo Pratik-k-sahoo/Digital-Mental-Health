@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/card";
 import useAppMutation from "@/hooks/useAppMutation";
 import useGetQuery from "@/hooks/useGetQuery";
-import { confirmBooking as confirmBookingApi, fetchBookingDetailsByToken } from "@/lib/apiServices";
+import {
+	confirmBooking as confirmBookingApi,
+	fetchBookingDetailsByToken,
+} from "@/lib/apiServices";
+import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck } from "lucide-react";
 import { Check } from "lucide-react";
 import React from "react";
@@ -26,8 +30,8 @@ const ConfirmBooking = () => {
 		isError: isFetchDetailsError,
 		data: details,
 		error: fetchDetailsError,
-	} = useGetQuery({
-		queryKey: ["appointments", "bookingDetails"],
+	} = useQuery({
+		queryKey: ["appointments", "bookingDetails", token],
 		queryFn: () => fetchBookingDetailsByToken(token),
 		enabled: !!token,
 	});
@@ -53,7 +57,6 @@ const ConfirmBooking = () => {
 			console.error("Error confirming appointment:", error);
 		},
 	});
-
 
 	const handleConfirmBooking = async () => {
 		await confirmBooking(token);
