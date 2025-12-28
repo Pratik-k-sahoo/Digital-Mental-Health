@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { register, login, logout, getMe, updateAlertThreshold } = require("../controllers/user");
+const {
+	register,
+	login,
+	logout,
+	getMe,
+	updateAlertThreshold,
+	updateUserDetails,
+} = require("../controllers/user");
 const {
 	regstrationSchema,
 	handleValidationResult,
@@ -10,6 +17,7 @@ const { authMiddleware, requireRole } = require("../middlewares/auth");
 
 router.post("/register", regstrationSchema, handleValidationResult, register);
 router.post("/login", loginSchema, handleValidationResult, login);
+router.patch("/update", authMiddleware, updateUserDetails);
 router.post("/logout", authMiddleware, logout);
 router.get("/auth", authMiddleware, getMe);
 router.patch(

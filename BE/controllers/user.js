@@ -33,19 +33,6 @@ async function register(req, res) {
 		let assessments = 0,
 			appointments = 0;
 
-		if (user?.role === "student") {
-			assessments = await Assessment.count({
-				where: { userId: user?.id },
-			});
-			appointments = await Appointment.count({
-				where: { studentId: user?.id },
-			});
-		} else if (user?.role === "counsellor") {
-			assessments = await Assessment.count({
-				where: { counsellorId: user?.id },
-			});
-		}
-
 		const userJSON = { ...user.toJSON(), threshold, assessments, appointments };
 
 		const payload = {
@@ -116,7 +103,7 @@ async function login(req, res) {
 				where: { studentId: user?.id },
 			});
 		} else if (user?.role === "counsellor") {
-			assessments = await Assessment.count({
+			appointments = await Appointment.count({
 				where: { counsellorId: user?.id },
 			});
 		}
@@ -208,33 +195,114 @@ async function updateAlertThreshold(req, res) {
 			});
 		}
 
-		const payload = {
-			pendingAppointments: Number(req.body.pendingAppointments),
-			severeAssessments: Number(req.body.severeAssessments),
-			moderateSevereAssessments: Number(req.body.moderateSevereAssessments),
-			avgPHQ9Score: Number(req.body.avgPHQ9Score),
-			avgGAD7Score: Number(req.body.avgGAD7Score),
+		const payload = {};
 
-			enablePendingAppointments: Boolean(req.body.enablePendingAppointments),
-			enableSevereAssessments: Boolean(req.body.enableSevereAssessments),
-			enableModerateSevereAssessments: Boolean(
-				req.body.enableModerateSevereAssessments
-			),
-			enableAvgPHQ9Score: Boolean(req.body.enableAvgPHQ9Score),
-			enableAvgGAD7Score: Boolean(req.body.enableAvgGAD7Score),
-		};
+		Object.entries(req.body).forEach(([key, value]) => {
+			if (value === undefined) return;
 
-		Object.keys(payload).forEach((key) => {
-			if (Number.isNaN(payload[key])) delete payload[key];
+			if (typeof value === "string" && value.trim() != "" && !isNaN(value))
+				payload[key] = Number(value);
+			else payload[key] = value;
 		});
+
+		if (Object.keys(payload).length === 0)
+			return res.status(200).json({
+				message: "No changes detected",
+				user: { ...user, threshold },
+			});
 
 		await threshold.update(payload);
 
-		const userJSON = { ...user, threshold };
-
 		res.status(200).json({
 			message: "Alert threshold updated",
-			user: userJSON,
+			user: { ...user, threshold },
+		});
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({
+			error: error?.errors?.[0]?.message || error?.message || error,
+		});
+	}
+}
+
+async function updateUserDetails(req, res) {
+	try {
+		const user = await User.findByPk(req.user.id);
+		if (!user) {
+			return res.status(404).json({
+				message: "User not found.",
+			});
+		}
+
+		const payload = {};
+		const changes = {};
+
+		if (
+			typeof req.body.name === "string" &&
+			req.body.name.trim() !== "" &&
+			req.body.name != user.name
+		) {
+			payload.name = req.body.name.trim();
+			changes.name = { from: user.name, to: payload.name };
+		}
+
+		if (
+			req.body.department !== undefined &&
+			req.body.department.trim() !== "" &&
+			req.body.department != user.department
+		) {
+			payload.department = req.body.department.trim();
+			changes.department = { from: user.department, to: payload.department };
+		}
+
+		if (req.body.year !== undefined && Number(req.body.year) !== user.year) {
+			payload.year = Number(req.body.year);
+			changes.year = { from: user.year, to: payload.year };
+		}
+
+		if (req.body.newPassword) {
+			console.log("Updating password");
+			if (!req.body.currentPassword) {
+				return res.status(400).json({
+					message: "Current password is required to change password",
+				});
+			}
+
+			const isMatch = await bcrypt.compare(
+				req.body.currentPassword,
+				user.password
+			);
+
+			if (!isMatch) {
+				return res.status(401).json({
+					message: "Current password is incorrect",
+				});
+			}
+
+			if (req.body.newPassword.length < 8) {
+				return res.status(400).json({
+					message: "New password must be at least 8 characters",
+				});
+			}
+
+			const hashed = await bcrypt.hash(req.body.newPassword, 10);
+			payload.password = hashed;
+			changes.password = "updated";
+		}
+
+		if (Object.keys(payload).length === 0) {
+			return res.status(200).json({
+				message: "No changes detected",
+				user: { ...user },
+			});
+		}
+
+		await user.update(payload);
+
+		res.status(200).json({
+			message: "Profile updated successfully",
+			user: { ...payload },
+			changes,
 		});
 	} catch (error) {
 		console.log(error);
@@ -250,4 +318,5 @@ module.exports = {
 	logout,
 	getMe,
 	updateAlertThreshold,
+	updateUserDetails,
 };
