@@ -70,7 +70,11 @@ const Dashboard = () => {
 				onValueChange={setActiveTab}
 				className="space-y-6"
 			>
-				<TabsList className="grid w-fit mx-auto grid-cols-5 lg:w-auto lg:inline-grid self-start">
+				<TabsList
+					className={`grid w-fit mx-auto ${
+						user?.role === "counsellor" ? "grid-cols-2" : "grid-cols-5"
+					} lg:inline-grid self-start`}
+				>
 					{TABSSHOW.map((tab) => (
 						<TabsTrigger
 							key={tab.id}

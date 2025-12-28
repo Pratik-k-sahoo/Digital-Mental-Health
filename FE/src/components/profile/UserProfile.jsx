@@ -13,24 +13,44 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import useAppMutation from "@/hooks/useAppMutation";
 import { updateUser as updateUserApi } from "@/lib/apiServices";
 import { useDispatch } from "react-redux";
-import { login } from "@/redux/slice/authSlice";
 import { Loader2 } from "lucide-react";
 import { Save } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "../ui/badge";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "../ui/field";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
+import { useState } from "react";
+import ShowPasswordChange from "./ShowPasswordChange";
+import { updateUser as updateUserRedux } from "@/redux/slice/authSlice";
+import { toast } from "sonner";
 
 const UserProfile = () => {
 	const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch()
-  const form = useForm({
+	const dispatch = useDispatch();
+	const [passwordDialog, setPasswordDialog] = useState(false);
+	const form = useForm({
 		defaultValues: {
 			...user,
+			password: "",
+			currentPassword: "",
 		},
 	});
+
+	const {
+		reset,
+		formState: { dirtyFields, isDirty },
+	} = form;
 
 	const {
 		mutate: updateUser,
@@ -41,7 +61,15 @@ const UserProfile = () => {
 		mutationFn: updateUserApi,
 		invalidateQueries: ["user"],
 		onSuccess: (data) => {
-			dispatch(login(data?.user));
+			toast.success(data?.message);
+			dispatch(updateUserRedux(data?.user));
+			reset(
+				{
+					...user,
+					...data?.user,
+				},
+				{ keepDirty: false }
+			);
 		},
 		onError: (error) => {
 			console.error(error);
@@ -49,8 +77,24 @@ const UserProfile = () => {
 	});
 
 	const handleSaveProfile = async (e) => {
-		updateUser(e);
+		if (!isDirty) return;
+		const payload = {};
+		Object.keys(dirtyFields).forEach((key) => {
+			const value = e[key];
+
+			if (typeof value === "string" && value !== "") payload[key] = value;
+			else payload[key] = value;
+		});
+
+		if (Object.keys(payload).length === 0) {
+			reset({
+				...user,
+			});
+			return;
+		}
+		await updateUser(payload);
 	};
+
 	return (
 		<div>
 			<Card>
@@ -58,41 +102,130 @@ const UserProfile = () => {
 					<CardTitle>Profile Information</CardTitle>
 					<CardDescription>Update your personal information</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="fullName">Full Name</Label>
-						<Input
-							id="fullName"
-							value={user?.name || ""}
-							placeholder="Enter your name"
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
-						<Input
-							id="email"
-							value={user?.email || ""}
-							disabled
-							className="bg-muted"
-						/>
-						<p className="text-xs text-muted-foreground">
-							Email cannot be changed
-						</p>
-					</div>
-					<Separator />
-					<Button onClick={handleSaveProfile} disabled={isPending}>
-						{isPending ? (
-							<>
-								<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-								Saving...
-							</>
-						) : (
-							<>
-								<Save className="h-4 w-4 mr-2" />
-								Save Changes
-							</>
-						)}
-					</Button>
+
+				<CardContent className="flex flex-col gap-3">
+					<form
+						id="profile-form"
+						onSubmit={form.handleSubmit(handleSaveProfile)}
+					>
+						<FieldGroup>
+							<Controller
+								name="name"
+								control={form.control}
+								render={({ field, fieldState }) => (
+									<Field data-invalid={fieldState.invalid}>
+										<FieldLabel htmlFor="name">Name</FieldLabel>
+										<Input
+											{...field}
+											id="name"
+											type="text"
+											aria-invalid={fieldState.invalid}
+										/>
+									</Field>
+								)}
+							/>
+							<Controller
+								name="email"
+								control={form.control}
+								render={({ field, fieldState }) => (
+									<Field data-invalid={fieldState.invalid}>
+										<FieldLabel htmlFor="email">Email*</FieldLabel>
+										<Tooltip>
+											<TooltipTrigger>
+												<Input
+													{...field}
+													id="email"
+													disabled
+													className="bg-muted"
+													type="text"
+													aria-invalid={fieldState.invalid}
+												/>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs text-primary-foreground">
+													Email cannot be changed
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									</Field>
+								)}
+							/>
+							<Controller
+								name="department"
+								control={form.control}
+								render={({ field, fieldState }) => (
+									<Field data-invalid={fieldState.invalid}>
+										<FieldLabel htmlFor="department">Department</FieldLabel>
+										<Input
+											{...field}
+											id="department"
+											type="text"
+											aria-invalid={fieldState.invalid}
+										/>
+									</Field>
+								)}
+							/>
+							<Controller
+								name="year"
+								control={form.control}
+								render={({ field, fieldState }) => (
+									<Field data-invalid={fieldState.invalid}>
+										<FieldLabel htmlFor="year">Passout Year</FieldLabel>
+										<div className="grid md:grid-cols-2 gap-4 justify-between">
+											<Tooltip>
+												<TooltipTrigger>
+													<Input
+														{...field}
+														type="text"
+														disabled
+														aria-invalid={fieldState.invalid}
+													/>
+												</TooltipTrigger>
+												<TooltipContent>
+													Select the pass-out year from the drop down 👉
+												</TooltipContent>
+											</Tooltip>
+
+											<Select
+												id="year"
+												value={field.value?.toString() ?? ""}
+												aria-invalid={fieldState.invalid}
+												onValueChange={field.onChange}
+											>
+												<SelectTrigger className="w-[180px]">
+													<SelectValue placeholder="Select Year" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value={"2025"}>2025</SelectItem>
+													<SelectItem value={"2026"}>2026</SelectItem>
+													<SelectItem value={"2027"}>2027</SelectItem>
+													<SelectItem value={"2028"}>2028</SelectItem>
+													<SelectItem value={"2029"}>2029</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
+									</Field>
+								)}
+							/>
+							<Separator />
+							<div className="flex items-center gap-8">
+								<Button type="submit" disabled={isPending} className="w-fit">
+									{isPending ? (
+										<>
+											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+											Saving...
+										</>
+									) : (
+										<>
+											<Save className="h-4 w-4 mr-2" />
+											Save Changes
+										</>
+									)}
+								</Button>
+								<ShowPasswordChange />
+							</div>
+						</FieldGroup>
+					</form>
 				</CardContent>
 			</Card>
 

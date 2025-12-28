@@ -47,38 +47,44 @@ const AlertThresholdsPanel = ({
 	const [isOpen, setIsOpen] = useState(false);
 	const form = useForm({
 		defaultValues: {
-			pendingAppointments: user?.threshold?.pendingAppointments,
-			severeAssessments: user?.threshold?.severeAssessments,
-			moderateSevereAssessments: user?.threshold?.moderateSevereAssessments,
-			avgPHQ9Score: user?.threshold?.avgPHQ9Score,
-			avgGAD7Score: user?.threshold?.avgGAD7Score,
-			enablePendingAppointments: user?.threshold?.enablePendingAppointments,
-			enableSevereAssessments: user?.threshold?.enableSevereAssessments,
-			enableModerateSevereAssessments:
-				user?.threshold?.enableModerateSevereAssessments,
-			enableAvgPHQ9Score: user?.threshold?.enableAvgPHQ9Score,
-			enableAvgGAD7Score: user?.threshold?.enableAvgGAD7Score,
+			...user?.threshold,
 		},
 	});
 
 	const {
-		mutate: updateAlertThreshold,
-		isError: isUpdateAlertThresholdError,
-		error: updateAlertThresholdError,
-	} = useAppMutation({
+		formState: { dirtyFields, isDirty },
+		reset,
+	} = form;
+
+	const { mutate: updateAlertThreshold } = useAppMutation({
 		mutationFn: updateAlertThresholdApi,
 		invalidateQueries: {
 			queryKey: ["adminDashboard", "threshold"],
 		},
 		onSuccess: (data) => {
 			dispatch(login(data?.user));
+			reset(data?.user?.threshold);
 		},
 	});
 
 	const saveThreshold = async (e) => {
+		const payload = {};
+		Object.keys(dirtyFields).forEach((key) => {
+			const value = e[key];
+
+			if (typeof value === "string" && value !== "")
+				payload[key] = Number(value);
+			else payload[key] = value;
+		});
+
+		if (Object.keys(payload).length === 0) {
+			setIsOpen(false);
+			return;
+		}
 		await updateAlertThreshold(e);
 		setIsOpen(false);
 	};
+
 	const alerts = useMemo(
 		() => [
 			{
@@ -261,7 +267,9 @@ const AlertThresholdsPanel = ({
 										>
 											Cancel
 										</Button>
-										<Button type="submit">Save Thresholds</Button>
+										<Button type="submit" disabled={!isDirty}>
+											Save Thresholds
+										</Button>
 									</div>
 								</FieldGroup>
 							</form>

@@ -50,6 +50,7 @@ const Signup = () => {
 		invalidateQueries: ["user"],
 		onSuccess: (data) => {
 			dispatch(login(data?.user));
+			console.log(from);
 			navigate(from, { replace: true });
 		},
 		onError: (error) => {
@@ -59,7 +60,7 @@ const Signup = () => {
 
 	const handleSignup = async (e) => {
 		console.log(e);
-		await createUserApi(e);
+		await createUser(e);
 	};
 
 	const togglePasswordType = () => {
@@ -254,7 +255,7 @@ const Signup = () => {
 															id="year"
 															{...field}
 															aria-invalid={fieldState.invalid}
-															defaultValue="student"
+															defaultValue="2025"
 															onValueChange={(e) => form.setValue("year", e)}
 														>
 															<SelectTrigger className="w-[180px]">

@@ -12,7 +12,7 @@ export async function createUser(credentials) {
 		if (response?.status !== 201) {
 			throw new Error(response?.data?.message || "Failed to create a account.");
 		}
-
+		console.log(response.data);
 		return response?.data;
 	} catch (error) {
 		throw new Error(error?.message || "Something went wrong.");
@@ -44,7 +44,27 @@ export async function loginUser(credentials) {
 }
 
 export async function updateUser(credentials) {
-	console.log(credentials);
+	try {
+		const response = await api.patch(
+			`/${import.meta.env.VITE_USER_URL}/update`,
+			credentials
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to update the account."
+			);
+		}
+
+		return response?.data;
+	} catch (error) {
+		throw new Error(
+			error?.response?.data?.message ||
+				error?.data?.message ||
+				error?.message ||
+				"Something went wrong."
+		);
+	}
 }
 
 export async function createAssessment(credentials) {
