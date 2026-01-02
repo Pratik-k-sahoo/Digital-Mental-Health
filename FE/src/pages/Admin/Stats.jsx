@@ -63,11 +63,11 @@ import {
 } from "recharts";
 
 const SEVERITY_COLORS = {
-	Minimal: "hsl(142, 76%, 36%)",
-	Mild: "hsl(48, 96%, 53%)",
-	Moderate: "hsl(38, 92%, 50%)",
-	"Moderately Severe": "hsl(25, 95%, 53%)",
-	Severe: "hsl(0, 84%, 60%)",
+	minimal: "hsl(142, 76%, 36%)",
+	mild: "hsl(48, 96%, 53%)",
+	moderate: "hsl(38, 92%, 50%)",
+	moderately_severe: "hsl(25, 95%, 53%)",
+	severe: "hsl(0, 84%, 60%)",
 	Unknown: "hsl(215, 14%, 45%)",
 };
 
@@ -124,45 +124,36 @@ const Stats = () => {
 		});
 	};
 
-	const {
-		data: resources = [],
-		isLoading: isResourceLoading,
-	} = useGetQuery({
+	const { data: resources = [], isLoading: isResourceLoading } = useGetQuery({
 		queryKey: ["adminDashboard", "resources"],
 		queryFn: fetchAllResources,
 		initialData: [],
 		cacheTime: 10 * 60 * 1000,
 	});
 
-	const {
-		data: appointments = [],
-		isLoading: isAppointmentsLoading,
-	} = useGetQuery({
-		queryKey: ["adminDashboard", "appointments"],
-		queryFn: fetchAllAppointments,
-		initialData: [],
-		cacheTime: 10 * 60 * 1000,
-	});
+	const { data: appointments = [], isLoading: isAppointmentsLoading } =
+		useGetQuery({
+			queryKey: ["adminDashboard", "appointments"],
+			queryFn: fetchAllAppointments,
+			initialData: [],
+			cacheTime: 10 * 60 * 1000,
+		});
 
-	const {
-		data: assessments = [],
-		isLoading: isAssessmentsLoading,
-	} = useGetQuery({
-		queryKey: ["adminDashboard", "assessments"],
-		queryFn: fetchAllAssessments,
-		initialData: [],
-		cacheTime: 10 * 60 * 1000,
-	});
+	const { data: assessments = [], isLoading: isAssessmentsLoading } =
+		useGetQuery({
+			queryKey: ["adminDashboard", "assessments"],
+			queryFn: fetchAllAssessments,
+			initialData: [],
+			cacheTime: 10 * 60 * 1000,
+		});
 
-	const {
-		data: topResources = [],
-		isLoading: isTopResourcesLoading,
-	} = useGetQuery({
-		queryKey: ["adminDashboard", "topResources", dateRange],
-		queryFn: () => fetchTopResources(getDateRangeStart(dateRange)),
-		initialData: [],
-		cacheTime: 10 * 60 * 1000,
-	});
+	const { data: topResources = [], isLoading: isTopResourcesLoading } =
+		useGetQuery({
+			queryKey: ["adminDashboard", "topResources", dateRange],
+			queryFn: () => fetchTopResources(getDateRangeStart(dateRange)),
+			initialData: [],
+			cacheTime: 10 * 60 * 1000,
+		});
 
 	const filteredAssessments = useMemo(
 		() => filterByDateRange(assessments),
@@ -386,430 +377,460 @@ const Stats = () => {
 				</div>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-2">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Activity className="h-5 w-5 text-primary" />
-							Assessment Severity Distribution
-						</CardTitle>
-						<CardDescription>
-							Breakdown of assessment results by severity level
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{severityPieData.length > 0 ? (
-							<ChartContainer config={chartConfig} className="h-80">
-								<ResponsiveContainer width="100%" height="100%">
-									<PieChart>
-										<Pie
-											data={severityPieData}
-											cx="50%"
-											cy="50%"
-											innerRadius={60}
-											outerRadius={100}
-											paddingAngle={2}
-											dataKey="value"
-											label={({ name, percent }) =>
-												`${name} (${(percent * 100).toFixed(0)}%)`
-											}
-											labelLine={false}
+			{window.innerWidth < 640 ? (
+				<p className="text-center">
+					View on <span className="text-red-500 font-bold">Laptop</span> or{" "}
+					<span className="text-red-500 font-bold">PC</span>
+				</p>
+			) : (
+				<div className="space-y-6">
+					<div className="grid gap-6 md:grid-cols-2">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<Activity className="h-5 w-5 text-primary" />
+									Assessment Severity Distribution
+								</CardTitle>
+								<CardDescription>
+									Breakdown of assessment results by severity level
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{severityPieData.length > 0 ? (
+									<ChartContainer config={chartConfig} className="h-80">
+										<ResponsiveContainer
+											width="100%"
+											aspect={1.618}
+											maxHeight={500}
 										>
-											{severityPieData.map((entry, index) => (
-												<Cell
-													key={`cell-${index}`}
-													fill={
-														SEVERITY_COLORS[entry.name] ||
-														SEVERITY_COLORS.Unknown
+											<PieChart
+												style={{
+													width: "100%",
+													maxWidth: "500px",
+													maxHeight: "80vh",
+													aspectRatio: 1,
+												}}
+												responsive
+												margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
+											>
+												<Pie
+													data={severityPieData}
+													cx="50%"
+													cy="50%"
+													innerRadius={60}
+													outerRadius={100}
+													paddingAngle={2}
+													dataKey="value"
+													label={({ name, percent }) =>
+														`${name} (${(percent * 100).toFixed(0)}%)`
 													}
-												/>
-											))}
-										</Pie>
-										<ChartTooltip content={<ChartTooltipContent />} />
-									</PieChart>
-								</ResponsiveContainer>
-							</ChartContainer>
-						) : (
-							<div className="h-[300px] flex items-center justify-center text-muted-foreground">
-								No assessment data available
-							</div>
-						)}
-						<div className="flex flex-wrap gap-2 mt-4 justify-center">
-							{Object.entries(SEVERITY_COLORS)
-								.slice(0, 5)
-								.map(([severity, color]) => (
-									<div
-										key={severity}
-										className="flex items-center gap-1.5 text-xs"
-									>
-										<div
-											className="w-3 h-3 rounded-full"
-											style={{ backgroundColor: color }}
-										/>
-										<span>{severity}</span>
+													labelLine={false}
+												>
+													{severityPieData.map((entry, index) => (
+														<Cell
+															key={`cell-${index}`}
+															fill={
+																SEVERITY_COLORS[entry.name] ||
+																SEVERITY_COLORS.Unknown
+															}
+														/>
+													))}
+												</Pie>
+												<ChartTooltip content={<ChartTooltipContent />} />
+											</PieChart>
+										</ResponsiveContainer>
+									</ChartContainer>
+								) : (
+									<div className="h-[300px] flex items-center justify-center text-muted-foreground">
+										No assessment data available
 									</div>
-								))}
-						</div>
-					</CardContent>
-				</Card>
+								)}
+								<div className="flex flex-wrap gap-2 mt-4 justify-center">
+									{Object.entries(SEVERITY_COLORS)
+										.slice(0, 5)
+										.map(([severity, color]) => (
+											<div
+												key={severity}
+												className="flex items-center gap-1.5 text-xs"
+											>
+												<div
+													className="w-3 h-3 rounded-full"
+													style={{ backgroundColor: color }}
+												/>
+												<span>{severity}</span>
+											</div>
+										))}
+								</div>
+							</CardContent>
+						</Card>
 
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Calendar className="h-5 w-5 text-purple-500" />
-							Appointment Demand (Last 30 Days)
-						</CardTitle>
-						<CardDescription>Daily appointment bookings trend</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<ChartContainer config={chartConfig} className="h-[300px]">
-							<LineChart data={appointmentDemandData}>
-								<CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-								<XAxis
-									dataKey="date"
-									tick={{ fontSize: 12 }}
-									tickLine={false}
-									axisLine={false}
-									interval="preserveStartEnd"
-								/>
-								<YAxis
-									tick={{ fontSize: 12 }}
-									tickLine={false}
-									axisLine={false}
-									allowDecimals={false}
-								/>
-								<ChartTooltip content={<ChartTooltipContent />} />
-								<Line
-									type="monotone"
-									dataKey="appointments"
-									stroke="hsl(var(--primary))"
-									strokeWidth={2}
-									dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 3 }}
-									activeDot={{ r: 5 }}
-								/>
-							</LineChart>
-						</ChartContainer>
-					</CardContent>
-				</Card>
-			</div>
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<Calendar className="h-5 w-5 text-purple-500" />
+									Appointment Demand (Last 30 Days)
+								</CardTitle>
+								<CardDescription>
+									Daily appointment bookings trend
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								<ChartContainer config={chartConfig} className="h-[300px]">
+									<LineChart data={appointmentDemandData}>
+										<CartesianGrid
+											strokeDasharray="3 3"
+											className="stroke-muted"
+										/>
+										<XAxis
+											dataKey="date"
+											tick={{ fontSize: 12 }}
+											tickLine={false}
+											axisLine={false}
+											interval="preserveStartEnd"
+										/>
+										<YAxis
+											tick={{ fontSize: 12 }}
+											tickLine={false}
+											axisLine={false}
+											allowDecimals={false}
+										/>
+										<ChartTooltip content={<ChartTooltipContent />} />
+										<Line
+											type="monotone"
+											dataKey="appointments"
+											stroke="hsl(var(--primary))"
+											strokeWidth={2}
+											dot={{
+												fill: "hsl(var(--primary))",
+												strokeWidth: 2,
+												r: 3,
+											}}
+											activeDot={{ r: 5 }}
+										/>
+									</LineChart>
+								</ChartContainer>
+							</CardContent>
+						</Card>
+					</div>
 
-			<div className="grid gap-6 md:grid-cols-2">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<FileText className="h-5 w-5 text-green-500" />
-							Resources by Category
-						</CardTitle>
-						<CardDescription>
-							Distribution of resources across categories
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{resourcesUsageData.length > 0 ? (
-							<ChartContainer config={chartConfig} className="h-[300px]">
-								<BarChart data={resourcesUsageData} layout="vertical">
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-muted"
-										horizontal={true}
-										vertical={false}
-									/>
-									<XAxis
-										type="number"
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-										allowDecimals={false}
-									/>
-									<YAxis
-										dataKey="category"
-										type="category"
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-										width={100}
-									/>
-									<ChartTooltip content={<ChartTooltipContent />} />
-									<Bar
-										dataKey="count"
-										fill="hsl(var(--sky))"
-										radius={[0, 4, 4, 0]}
-									/>
-								</BarChart>
-							</ChartContainer>
-						) : (
-							<div className="h-[300px] flex items-center justify-center text-muted-foreground">
-								No resources data available
-							</div>
-						)}
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<TrendingUp className="h-5 w-5 text-blue-500" />
-							Average Assessment Scores Trend
-						</CardTitle>
-						<CardDescription>
-							PHQ-9 and GAD-7 average scores over time
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{avgScoresTrendData.length > 0 ? (
-							<ChartContainer config={chartConfig} className="h-[300px]">
-								<AreaChart data={avgScoresTrendData}>
-									<defs>
-										<linearGradient
-											id="avgPHQ9Gradient"
-											x1="0"
-											y1="0"
-											x2="0"
-											y2="1"
-										>
-											<stop
-												offset="5%"
-												stopColor="hsl(var(--lavender))"
-												stopOpacity={0.3}
+					<div className="grid gap-6 md:grid-cols-2">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<FileText className="h-5 w-5 text-green-500" />
+									Resources by Category
+								</CardTitle>
+								<CardDescription>
+									Distribution of resources across categories
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{resourcesUsageData.length > 0 ? (
+									<ChartContainer config={chartConfig} className="h-[300px]">
+										<BarChart data={resourcesUsageData} layout="vertical">
+											<CartesianGrid
+												strokeDasharray="3 3"
+												className="stroke-muted"
+												horizontal={true}
+												vertical={false}
 											/>
-											<stop
-												offset="95%"
-												stopColor="hsl(var(--lavender))"
-												stopOpacity={0}
+											<XAxis
+												type="number"
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+												allowDecimals={false}
 											/>
-										</linearGradient>
-										<linearGradient
-											id="avgGAD7Gradient"
-											x1="0"
-											y1="0"
-											x2="0"
-											y2="1"
-										>
-											<stop
-												offset="5%"
-												stopColor="hsl(var(--sky))"
-												stopOpacity={0.3}
+											<YAxis
+												dataKey="category"
+												type="category"
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+												width={100}
 											/>
-											<stop
-												offset="95%"
-												stopColor="hsl(var(--sky))"
-												stopOpacity={0}
+											<ChartTooltip content={<ChartTooltipContent />} />
+											<Bar
+												dataKey="count"
+												fill="hsl(var(--sky))"
+												radius={[0, 4, 4, 0]}
 											/>
-										</linearGradient>
-									</defs>
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-muted"
-									/>
-									<XAxis
-										dataKey="date"
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-									/>
-									<YAxis
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-										domain={[0, 27]}
-									/>
-									<ChartTooltip content={<ChartTooltipContent />} />
-									<ChartLegend content={<ChartLegendContent />} />
-									<Area
-										type="monotone"
-										dataKey="avgPHQ9"
-										stroke="hsl(var(--lavender))"
-										fill="url(#avgPHQ9Gradient)"
-										strokeWidth={2}
-										connectNulls
-									/>
-									<Area
-										type="monotone"
-										dataKey="avgGAD7"
-										stroke="hsl(var(--sky))"
-										fill="url(#avgGAD7Gradient)"
-										strokeWidth={2}
-										connectNulls
-									/>
-								</AreaChart>
-							</ChartContainer>
-						) : (
-							<div className="h-[300px] flex items-center justify-center text-muted-foreground">
-								No assessment data available
-							</div>
-						)}
-					</CardContent>
-				</Card>
-			</div>
+										</BarChart>
+									</ChartContainer>
+								) : (
+									<div className="h-[300px] flex items-center justify-center text-muted-foreground">
+										No resources data available
+									</div>
+								)}
+							</CardContent>
+						</Card>
 
-			<div className="grid gap-6 md:grid-cols-2">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<FileText className="h-5 w-5 text-primary" />
-							Top Resources by Usage
-						</CardTitle>
-						<CardDescription>
-							Most viewed resources ranked by user engagement
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{topResources?.length > 0 ? (
-							<ChartContainer config={chartConfig} className="h-[300px]">
-								<BarChart data={topResources} layout="vertical">
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-muted"
-										horizontal={true}
-										vertical={false}
-									/>
-									<XAxis
-										type="number"
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-										allowDecimals={false}
-									/>
-									<YAxis
-										dataKey="title"
-										type="category"
-										tick={{ fontSize: 11 }}
-										tickLine={false}
-										axisLine={false}
-										width={120}
-										tickFormatter={(value) =>
-											value.length > 18 ? `${value.slice(0, 18)}...` : value
-										}
-									/>
-									<ChartTooltip
-										content={
-											<ChartTooltipContent
-												labelFormatter={(_, payload) => {
-													const data = payload?.[0]?.payload;
-													return data?.title ?? "";
-												}}
-												formatter={(value, name, props) => {
-													const { lastUsedAt } = props.payload;
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<TrendingUp className="h-5 w-5 text-blue-500" />
+									Average Assessment Scores Trend
+								</CardTitle>
+								<CardDescription>
+									PHQ-9 and GAD-7 average scores over time
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{avgScoresTrendData.length > 0 ? (
+									<ChartContainer config={chartConfig} className="h-[300px]">
+										<AreaChart data={avgScoresTrendData}>
+											<defs>
+												<linearGradient
+													id="avgPHQ9Gradient"
+													x1="0"
+													y1="0"
+													x2="0"
+													y2="1"
+												>
+													<stop
+														offset="5%"
+														stopColor="hsl(var(--lavender))"
+														stopOpacity={0.3}
+													/>
+													<stop
+														offset="95%"
+														stopColor="hsl(var(--lavender))"
+														stopOpacity={0}
+													/>
+												</linearGradient>
+												<linearGradient
+													id="avgGAD7Gradient"
+													x1="0"
+													y1="0"
+													x2="0"
+													y2="1"
+												>
+													<stop
+														offset="5%"
+														stopColor="hsl(var(--sky))"
+														stopOpacity={0.3}
+													/>
+													<stop
+														offset="95%"
+														stopColor="hsl(var(--sky))"
+														stopOpacity={0}
+													/>
+												</linearGradient>
+											</defs>
+											<CartesianGrid
+												strokeDasharray="3 3"
+												className="stroke-muted"
+											/>
+											<XAxis
+												dataKey="date"
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+											/>
+											<YAxis
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+												domain={[0, 27]}
+											/>
+											<ChartTooltip content={<ChartTooltipContent />} />
+											<ChartLegend content={<ChartLegendContent />} />
+											<Area
+												type="monotone"
+												dataKey="avgPHQ9"
+												stroke="hsl(var(--lavender))"
+												fill="url(#avgPHQ9Gradient)"
+												strokeWidth={2}
+												connectNulls
+											/>
+											<Area
+												type="monotone"
+												dataKey="avgGAD7"
+												stroke="hsl(var(--sky))"
+												fill="url(#avgGAD7Gradient)"
+												strokeWidth={2}
+												connectNulls
+											/>
+										</AreaChart>
+									</ChartContainer>
+								) : (
+									<div className="h-[300px] flex items-center justify-center text-muted-foreground">
+										No assessment data available
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</div>
 
-													return [
-														<>
-															<div className="flex flex-col gap-0.5">
-																<span className="font-extrabold text-destructive">
-																	Usage:{" "}
-																	<span className="font-semibold text-black">
-																		{value}
-																	</span>
-																</span>
-																{lastUsedAt && (
-																	<span className="text-xs text-accent font-extrabold">
-																		Last used:{" "}
-																		<span className="font-semibold text-black">
-																			{new Date(
-																				lastUsedAt
-																			).toLocaleDateString()}{" "}
-																			{new Date(lastUsedAt).toLocaleTimeString(
-																				[],
-																				{
-																					hour: "2-digit",
-																					minute: "2-digit",
-																				}
-																			)}
+					<div className="grid gap-6 md:grid-cols-2">
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<FileText className="h-5 w-5 text-primary" />
+									Top Resources by Usage
+								</CardTitle>
+								<CardDescription>
+									Most viewed resources ranked by user engagement
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{topResources?.length > 0 ? (
+									<ChartContainer config={chartConfig} className="h-[300px]">
+										<BarChart data={topResources} layout="vertical">
+											<CartesianGrid
+												strokeDasharray="3 3"
+												className="stroke-muted"
+												horizontal={true}
+												vertical={false}
+											/>
+											<XAxis
+												type="number"
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+												allowDecimals={false}
+											/>
+											<YAxis
+												dataKey="title"
+												type="category"
+												tick={{ fontSize: 11 }}
+												tickLine={false}
+												axisLine={false}
+												width={120}
+												tickFormatter={(value) =>
+													value.length > 18 ? `${value.slice(0, 18)}...` : value
+												}
+											/>
+											<ChartTooltip
+												content={
+													<ChartTooltipContent
+														labelFormatter={(_, payload) => {
+															const data = payload?.[0]?.payload;
+															return data?.title ?? "";
+														}}
+														formatter={(value, name, props) => {
+															const { lastUsedAt } = props.payload;
+
+															return [
+																<>
+																	<div className="flex flex-col gap-0.5">
+																		<span className="font-extrabold text-destructive">
+																			Usage:{" "}
+																			<span className="font-semibold text-black">
+																				{value}
+																			</span>
 																		</span>
-																	</span>
-																)}
-															</div>
-														</>,
-													];
-												}}
+																		{lastUsedAt && (
+																			<span className="text-xs text-accent font-extrabold">
+																				Last used:{" "}
+																				<span className="font-semibold text-black">
+																					{new Date(
+																						lastUsedAt
+																					).toLocaleDateString()}{" "}
+																					{new Date(
+																						lastUsedAt
+																					).toLocaleTimeString([], {
+																						hour: "2-digit",
+																						minute: "2-digit",
+																					})}
+																				</span>
+																			</span>
+																		)}
+																	</div>
+																</>,
+															];
+														}}
+													/>
+												}
 											/>
-										}
-									/>
-									<Bar
-										dataKey="usageCount"
-										fill="hsl(var(--primary))"
-										radius={[0, 4, 4, 0]}
-									/>
-								</BarChart>
-							</ChartContainer>
-						) : (
-							<div className="h-[300px] flex items-center justify-center text-muted-foreground">
-								No resource usage data available
-							</div>
-						)}
-					</CardContent>
-				</Card>
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Calendar className="h-5 w-5 text-orange-500" />
-							Appointment Status by Month
-						</CardTitle>
-						<CardDescription>
-							Stacked comparison of appointment statuses over time
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{departmentComparisonData.length > 0 ? (
-							<ChartContainer config={chartConfig} className="h-[350px]">
-								<BarChart data={departmentComparisonData}>
-									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-muted"
-									/>
-									<XAxis
-										dataKey="month"
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-									/>
-									<YAxis
-										tick={{ fontSize: 12 }}
-										tickLine={false}
-										axisLine={false}
-										allowDecimals={false}
-									/>
-									<ChartTooltip content={<ChartTooltipContent />} />
-									<ChartLegend content={<ChartLegendContent />} />
-									<Bar
-										dataKey="pending"
-										stackId="a"
-										fill="hsl(48, 96%, 53%)"
-										radius={[0, 0, 0, 0]}
-									/>
-									<Bar
-										dataKey="confirmed"
-										stackId="a"
-										fill="hsl(142, 76%, 36%)"
-										radius={[0, 0, 0, 0]}
-									/>
-									<Bar
-										dataKey="completed"
-										stackId="a"
-										fill="hsl(215, 76%, 56%)"
-										radius={[0, 0, 0, 0]}
-									/>
-									<Bar
-										dataKey="cancelled"
-										stackId="a"
-										fill="hsl(0, 84%, 60%)"
-										radius={[4, 4, 0, 0]}
-									/>
-									<Bar
-										dataKey="expired"
-										stackId="a"
-										fill="hsl(0, 20%, 45%)"
-										radius={[4, 4, 0, 0]}
-									/>
-								</BarChart>
-							</ChartContainer>
-						) : (
-							<div className="h-[350px] flex items-center justify-center text-muted-foreground">
-								No appointment data available
-							</div>
-						)}
-					</CardContent>
-				</Card>
-			</div>
+											<Bar
+												dataKey="usageCount"
+												fill="hsl(var(--primary))"
+												radius={[0, 4, 4, 0]}
+											/>
+										</BarChart>
+									</ChartContainer>
+								) : (
+									<div className="h-[300px] flex items-center justify-center text-muted-foreground">
+										No resource usage data available
+									</div>
+								)}
+							</CardContent>
+						</Card>
+						<Card>
+							<CardHeader>
+								<CardTitle className="flex items-center gap-2">
+									<Calendar className="h-5 w-5 text-orange-500" />
+									Appointment Status by Month
+								</CardTitle>
+								<CardDescription>
+									Stacked comparison of appointment statuses over time
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{departmentComparisonData.length > 0 ? (
+									<ChartContainer config={chartConfig} className="h-[350px]">
+										<BarChart data={departmentComparisonData}>
+											<CartesianGrid
+												strokeDasharray="3 3"
+												className="stroke-muted"
+											/>
+											<XAxis
+												dataKey="month"
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+											/>
+											<YAxis
+												tick={{ fontSize: 12 }}
+												tickLine={false}
+												axisLine={false}
+												allowDecimals={false}
+											/>
+											<ChartTooltip content={<ChartTooltipContent />} />
+											<ChartLegend content={<ChartLegendContent />} />
+											<Bar
+												dataKey="pending"
+												stackId="a"
+												fill="hsl(48, 96%, 53%)"
+												radius={[0, 0, 0, 0]}
+											/>
+											<Bar
+												dataKey="confirmed"
+												stackId="a"
+												fill="hsl(142, 76%, 36%)"
+												radius={[0, 0, 0, 0]}
+											/>
+											<Bar
+												dataKey="completed"
+												stackId="a"
+												fill="hsl(215, 76%, 56%)"
+												radius={[0, 0, 0, 0]}
+											/>
+											<Bar
+												dataKey="cancelled"
+												stackId="a"
+												fill="hsl(0, 84%, 60%)"
+												radius={[4, 4, 0, 0]}
+											/>
+											<Bar
+												dataKey="expired"
+												stackId="a"
+												fill="hsl(0, 20%, 45%)"
+												radius={[4, 4, 0, 0]}
+											/>
+										</BarChart>
+									</ChartContainer>
+								) : (
+									<div className="h-[350px] flex items-center justify-center text-muted-foreground">
+										No appointment data available
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
