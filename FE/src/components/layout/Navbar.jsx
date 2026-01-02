@@ -19,6 +19,9 @@ import { logout } from "@/redux/slice/authSlice";
 import { logout as resourceLogout } from "@/redux/slice/resourceSlice";
 import { useNavigate } from "react-router";
 import { Shield } from "lucide-react";
+import { X } from "lucide-react";
+import { Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const navItems = [
 	{ label: "Home", href: "/" },
@@ -68,9 +71,13 @@ const Navbar = () => {
 				)}
 
 				{!user && (
-					<div className="hidden md:flex items-center gap-3">
+					<div className={`${user ? "hidden" : ""} flex items-center gap-3`}>
 						<Link to={"/#crisis"}>
-							<Button variant="calm" size="sm" className="cursor-pointer">
+							<Button
+								variant="calm"
+								size="sm"
+								className="cursor-pointer hidden sm:block"
+							>
 								Crisis Help
 							</Button>
 						</Link>
@@ -137,7 +144,97 @@ const Navbar = () => {
 						</DropdownMenu>
 					</div>
 				)}
+
+				{user && (
+					<div className="md:hidden p-2 rounded-lg hover:bg-muted flex items-center gap-3">
+						<DropdownMenu>
+							<DropdownMenuTrigger>
+								<Avatar>
+									<AvatarImage src="https://github.com/shadcn.png" />
+									<AvatarFallback>CN</AvatarFallback>
+								</Avatar>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuLabel className="font-bold">
+									My Account
+								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem className="focus:bg-sage">
+									<Link to="/profile">Profile</Link>
+								</DropdownMenuItem>
+								{user?.role === "student" && (
+									<DropdownMenuItem className="focus:bg-sage" asChild>
+										<Link to={"/profile?tab=appointment"}>Appointments</Link>
+									</DropdownMenuItem>
+								)}
+								{user?.role === "student" && (
+									<DropdownMenuItem className="focus:bg-sage" asChild>
+										<Link to={"/profile?tab=history"}>Assessments</Link>
+									</DropdownMenuItem>
+								)}
+								<DropdownMenuItem className="focus:bg-sage" asChild>
+									<Link to={"/profile?tab=settings"}>Setting</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={handleLogout}
+									className="focus:bg-sage cursor-pointer"
+								>
+									Logout
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<button
+							className="md:hidden p-2 rounded-lg hover:bg-muted"
+							onClick={() => setMobileMenu(!mobileMenu)}
+						>
+							{mobileMenu ? (
+								<X className="h-6 w-6" />
+							) : (
+								<Menu className="h-6 w-6" />
+							)}
+						</button>
+					</div>
+				)}
 			</div>
+
+			{mobileMenu && (
+				<div className="md:hidden border-t border-border bg-background">
+					<nav className="container py-4 flex flex-col gap-2">
+						{user && (
+							<div className="flex items-center justify-between gap-3">
+								{user?.role !== "student" && (
+									<Button
+										variant="calm"
+										size="sm"
+										className="cursor-pointer"
+										asChild
+									>
+										<Link to={"/admin"}>
+											<Shield /> Admin
+										</Link>
+									</Button>
+								)}
+							</div>
+						)}
+						{user &&
+							navItems.map((item) => (
+								<Link
+									key={item.href}
+									to={item.href}
+									onClick={() => setMobileMenu(false)}
+									className={cn(
+										"px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+										location.pathname === item.href
+											? "bg-sage-light text-foreground"
+											: "text-muted-foreground hover:text-foreground hover:bg-muted"
+									)}
+								>
+									{item.label}
+								</Link>
+							))}
+					</nav>
+				</div>
+			)}
 		</header>
 	);
 };

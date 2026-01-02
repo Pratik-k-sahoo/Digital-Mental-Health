@@ -215,7 +215,7 @@ const AssessmentHistory = () => {
 			</div>
 
 			<Card>
-				<CardHeader className="flex flex-row items-center justify-between">
+				<CardHeader className="flex flex-col md:flex-row items-center justify-between">
 					<CardTitle className="flex items-center gap-2">
 						<History className="h-5 w-5" />
 						History
@@ -254,9 +254,9 @@ const AssessmentHistory = () => {
 							{data?.map((item) => (
 								<div
 									key={item.id}
-									className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+									className="flex flex-col md:flex-row items-center md:items-start justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
 								>
-									<div className="flex items-center gap-3">
+									<div className="flex flex-col md:flex-row items-center gap-3">
 										{item.type === "PHQ9" ? (
 											<Brain className="h-5 w-5 text-sky" />
 										) : (
@@ -264,24 +264,24 @@ const AssessmentHistory = () => {
 										)}
 										<div>
 											<Drawer>
-												<DrawerTrigger className="font-medium cursor-pointer">
+												<DrawerTrigger className="font-medium cursor-pointer flex flex-col md:flex-row">
 													{item.type === "PHQ9" ? "PHQ-9" : "GAD-7"}{" "}
 													<span className="text-black/50 hover:underline">
 														{"(click here to see details)"}
 													</span>
 												</DrawerTrigger>
-												<DrawerContent>
+												<DrawerContent className="px-4">
 													<DrawerHeader>
 														<DrawerTitle>Detailed Answer</DrawerTitle>
 														<DrawerDescription>
 															This answers cannot be edited.
 														</DrawerDescription>
 													</DrawerHeader>
-													<div className="flex flex-col items-start justify-center w-fit mx-auto">
+													<div className="max-h-[60vh] overflow-y-auto px-2 flex flex-col items-start">
 														{item?.answers?.map((answer, idx) => (
 															<div
 																key={idx}
-																className="flex items-center justify-center"
+																className="flex flex-col sm:flex-row items-start sm:items-center justify-center"
 															>
 																<p className="font-semibold text-red-500">
 																	<span className="text-black">
@@ -315,7 +315,7 @@ const AssessmentHistory = () => {
 											</Drawer>
 											<p
 												className={cn(
-													"text-sm",
+													"text-sm text-center md:text-start",
 													getSeverityColor(item?.severity)
 												)}
 											>
@@ -323,11 +323,11 @@ const AssessmentHistory = () => {
 											</p>
 										</div>
 									</div>
-									<div className="text-right">
-										<p className="font-bold">
+									<div className="text-center md:text-right">
+										<p className="font-bold text-center md:text-end">
 											{item.score}/{item.type === "PHQ9" ? 27 : 21}
 										</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-xs text-muted-foreground text-center md:text-end">
 											{format(new Date(item?.createdAt), "MMM d, yyyy")}
 										</p>
 									</div>

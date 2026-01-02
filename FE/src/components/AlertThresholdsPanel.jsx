@@ -176,7 +176,7 @@ const AlertThresholdsPanel = ({
 	return (
 		<Card className="border-l-4 border-l-destructive/50">
 			<CardHeader className="pb-3">
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between">
 					<div className="flex items-center gap-2">
 						<div className="p-2 rounded-lg bg-destructive/10">
 							<Bell className="h-5 w-5 text-destructive" />
@@ -288,7 +288,7 @@ const AlertThresholdsPanel = ({
 						<div className="flex gap-2">
 							{criticalCount > 0 && (
 								<Badge variant="destructive" className="gap-1">
-									<AlertTriangle className="h-3 w-3" />
+									<AlertTriangle className="h-3 md:w-3 " />
 									{criticalCount} Critical
 								</Badge>
 							)}

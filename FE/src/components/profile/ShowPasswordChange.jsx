@@ -68,7 +68,10 @@ const ShowPasswordChange = () => {
 					</DialogDescription>
 				</DialogHeader>
 
-				<form onSubmit={form.handleSubmit(handleChangePassword)}>
+				<form
+					onSubmit={form.handleSubmit(handleChangePassword)}
+					className="space-y-4"
+				>
 					<FieldGroup>
 						<Controller
 							name="currentPassword"
@@ -153,7 +156,9 @@ const ShowPasswordChange = () => {
 					</FieldGroup>
 					<DialogFooter>
 						<DialogClose asChild>
-							<Button variant="outline">Cancel</Button>
+							<Button variant="outline" type="button">
+								Cancel
+							</Button>
 						</DialogClose>
 						<Button
 							type="submit"

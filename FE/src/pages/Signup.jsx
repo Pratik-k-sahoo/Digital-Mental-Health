@@ -70,8 +70,8 @@ const Signup = () => {
 	return (
 		<Layout>
 			<section className="py-12 min-h-[calc(100vh-4.026rem)] bg-linear-to-br from-accent to-primary flex items-center">
-				<div className="container flex md:flex-row justify-center items-stretch">
-					<Card className="w-full rounded-r-none border-r-0 flex flex-col items-start justify-start py-20 bg-primary border-0 px-32">
+				<div className="container flex flex-col gap-4 lg:gap-0 lg:flex-row justify-center md:items-stretch">
+					<Card className="w-full lg:rounded-r-none lg:border-r-0 flex flex-col items-center lg:items-start justify-start py-20 bg-primary border-0 px-5 lg:px-32">
 						<h1 className="text-4xl text-primary-foreground tracking-widest font-extrabold font-serif h-5">
 							WELCOME
 						</h1>
@@ -100,7 +100,7 @@ const Signup = () => {
 
 						<p className="text-xs">*Available in multi-language</p>
 					</Card>
-					<Card className="w-11/12 flex flex-col items-center justify-center px-5 rounded-l-none border-l-0">
+					<Card className="w-full lg:w-11/12 flex flex-col items-center justify-center px-5 lg:rounded-l-none lg:border-l-0">
 						<span className="text-4xl font-bold tracking-wider p-1 text-sage-dark">
 							Signup Page
 						</span>
@@ -112,7 +112,7 @@ const Signup = () => {
 								className="flex flex-col gap-4 items-center"
 							>
 								<FieldGroup>
-									<div className="flex gap-4">
+									<div className="flex gap-4 flex-col md:flex-row">
 										<Controller
 											name="name"
 											control={form.control}
@@ -123,7 +123,7 @@ const Signup = () => {
 													</FieldLabel>
 													<Input
 														{...field}
-														className="w-full"
+														className="w-full placeholder:text-md"
 														id="name"
 														type="text"
 														aria-invalid={fieldState.invalid}
@@ -152,7 +152,7 @@ const Signup = () => {
 											)}
 										/>
 									</div>
-									<div className="flex gap-4">
+									<div className="flex flex-col md:flex-row gap-4">
 										<Controller
 											name="password"
 											control={form.control}
@@ -220,7 +220,7 @@ const Signup = () => {
 									</div>
 
 									{isStudent && (
-										<div className="flex gap-4">
+										<div className="flex flex-col md:flex-row gap-4">
 											<Controller
 												name="department"
 												control={form.control}

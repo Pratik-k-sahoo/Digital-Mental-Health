@@ -67,6 +67,30 @@ export async function updateUser(credentials) {
 	}
 }
 
+export async function resetUser(credentials) {
+  try {
+		const response = await api.post(
+			`/${import.meta.env.VITE_USER_URL}/forget`,
+			credentials
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to reset password."
+			);
+		}
+
+		return response?.data;
+	} catch (error) {
+		throw new Error(
+			error?.response?.data?.message ||
+				error?.data?.message ||
+				error?.message ||
+				"Something went wrong."
+		);
+	}
+}
+
 export async function createAssessment(credentials) {
 	try {
 		const response = await api.post(

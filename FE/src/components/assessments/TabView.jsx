@@ -22,12 +22,18 @@ const TabView = ({ setSelectedAssessment, setResult }) => {
 			onValueChange={setActiveTab}
 			className="max-w-4xl mx-auto"
 		>
-			<TabsList className="grid w-full grid-cols-2 mb-8">
-				<TabsTrigger value="assessments" className="gap-2 cursor-pointer">
+			<TabsList className="grid w-full grid-cols-2 mb-8 h-auto">
+				<TabsTrigger
+					value="assessments"
+					className="w-full flex items-center justify-center text-center whitespace-normal leading-tight gap-2 cursor-pointer"
+				>
 					<ClipboardCheck className="h-4 2-4" />
 					Mental Health Assessments
 				</TabsTrigger>
-				<TabsTrigger value="history" className="gap-2 cursor-pointer">
+				<TabsTrigger
+					value="history"
+					className="w-full flex items-center justify-center text-center whitespace-normal leading-tight gap-2 cursor-pointer"
+				>
 					<History className="h-4 w-4" />
 					History
 				</TabsTrigger>

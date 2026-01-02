@@ -54,6 +54,7 @@ import { format } from "date-fns";
 import { Edit } from "lucide-react";
 import { Trash2 } from "lucide-react";
 import { Switch } from "../ui/switch";
+import { ClosedCaption } from "lucide-react";
 
 const TYPES = ["Article", "Video", "Audio"];
 
@@ -208,7 +209,7 @@ const AdminResourcesTab = () => {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
 					<div>
 						<CardTitle className="flex items-center gap-2">
 							<FileText className="h-5 w-5" />
@@ -267,7 +268,10 @@ const AdminResourcesTab = () => {
 													data-invalid={fieldState.invalid}
 													className="space-y-2"
 												>
-													<FieldLabel className="text-lg" htmlFor="title">
+													<FieldLabel
+														className="text-base md:text-lg"
+														htmlFor="title"
+													>
 														Title (English)*
 													</FieldLabel>
 													<Input
@@ -276,6 +280,7 @@ const AdminResourcesTab = () => {
 														type="text"
 														aria-invalid={fieldState.invalid}
 														placeholder="Resource title"
+														className="placeholder:text-sm placeholder:md:text-base"
 													/>
 												</Field>
 											)}
@@ -289,7 +294,10 @@ const AdminResourcesTab = () => {
 														data-invalid={fieldState.invalid}
 														className="space-y-2"
 													>
-														<FieldLabel className="text-lg" htmlFor="category">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="category"
+														>
 															Category*
 														</FieldLabel>
 														<Select
@@ -326,7 +334,10 @@ const AdminResourcesTab = () => {
 														data-invalid={fieldState.invalid}
 														className="space-y-2"
 													>
-														<FieldLabel className="text-lg" htmlFor="type">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="type"
+														>
 															Type*
 														</FieldLabel>
 														<Select
@@ -366,7 +377,7 @@ const AdminResourcesTab = () => {
 														className="space-y-2 md:col-span-2"
 													>
 														<FieldLabel
-															className="text-lg"
+															className="text-base md:text-lg"
 															htmlFor="description"
 														>
 															Description (English)*
@@ -377,6 +388,7 @@ const AdminResourcesTab = () => {
 															type="text"
 															aria-invalid={fieldState.invalid}
 															placeholder="Resource description"
+															className="placeholder:text-sm placeholder:md:text-base"
 														/>
 													</Field>
 												)}
@@ -389,7 +401,10 @@ const AdminResourcesTab = () => {
 														data-invalid={fieldState.invalid}
 														className="space-y-2"
 													>
-														<FieldLabel className="text-lg" htmlFor="language">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="language"
+														>
 															Language
 														</FieldLabel>
 														<Input
@@ -398,6 +413,7 @@ const AdminResourcesTab = () => {
 															type="text"
 															aria-invalid={fieldState.invalid}
 															placeholder="en/hi/od language"
+															className="placeholder:text-sm placeholder:md:text-base"
 														/>
 													</Field>
 												)}
@@ -412,7 +428,10 @@ const AdminResourcesTab = () => {
 														data-invalid={fieldState.invalid}
 														className="space-y-2"
 													>
-														<FieldLabel className="text-lg" htmlFor="url">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="url"
+														>
 															External URL
 														</FieldLabel>
 														<Input
@@ -421,6 +440,7 @@ const AdminResourcesTab = () => {
 															type="text"
 															aria-invalid={fieldState.invalid}
 															placeholder="https://..."
+															className="placeholder:text-sm placeholder:md:text-base"
 														/>
 													</Field>
 												)}
@@ -434,7 +454,10 @@ const AdminResourcesTab = () => {
 														data-invalid={fieldState.invalid}
 														className="space-y-2"
 													>
-														<FieldLabel className="text-lg" htmlFor="tags">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="tags"
+														>
 															Tags
 														</FieldLabel>
 														<Input
@@ -443,6 +466,7 @@ const AdminResourcesTab = () => {
 															type="text"
 															aria-invalid={fieldState.invalid}
 															placeholder="Tags for the resource"
+															className="placeholder:text-sm placeholder:md:text-base"
 														/>
 													</Field>
 												)}
@@ -462,7 +486,10 @@ const AdminResourcesTab = () => {
 															aria-invalid={fieldState.invalid}
 															className="shrink-0"
 														/>
-														<FieldLabel className="text-lg" htmlFor="isActive">
+														<FieldLabel
+															className="text-base md:text-lg"
+															htmlFor="isActive"
+														>
 															Publish (Make this resource visible to students)
 														</FieldLabel>
 													</div>
@@ -507,8 +534,8 @@ const AdminResourcesTab = () => {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="flex items-center gap-4 mb-6">
-					<div className="relative flex-1 max-w-sm">
+				<div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+					<div className="relative flex-1 max-w-sm order-2 md:order-1">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
 							placeholder="Search resources..."
@@ -517,7 +544,9 @@ const AdminResourcesTab = () => {
 							className="pl-9"
 						/>
 					</div>
-					<Badge variant="secondary">{resources?.length} resources</Badge>
+					<Badge variant="secondary" className="order-1 md:order-2">
+						{resources?.length} resources
+					</Badge>
 				</div>
 
 				{isLoading ? (
@@ -527,8 +556,8 @@ const AdminResourcesTab = () => {
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader>
-								<TableRow>
+							<TableHeader className="font-bold text-base">
+								<TableRow className="hidden sm:table-row">
 									<TableHead>Title</TableHead>
 									<TableHead>Category</TableHead>
 									<TableHead>Status</TableHead>
@@ -549,23 +578,65 @@ const AdminResourcesTab = () => {
 								) : (
 									filteredResources?.map((resource) => (
 										<TableRow key={resource.id}>
-											<TableCell className="font-medium">
+											<TableCell className="font-medium sm:hidden">
+												<div className="space-y-1.5">
+													<div className="flex items-center justify-between">
+														{format(
+															new Date(resource?.createdAt),
+															"MMM d, yyyy"
+														)}
+														<div className="flex items-center gap-1">
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() => openEditDialog(resource)}
+																asChild
+																className="w-6"
+															>
+																<Edit className=" " />
+															</Button>
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() => handleDelete(resource.id)}
+																asChild
+																className="w-6"
+															>
+																<Trash2 className="  text-destructive" />
+															</Button>
+														</div>
+													</div>
+													<div className="text-wrap flex gap-3">
+                            <ClosedCaption />{resource.title}</div>
+													<div className="flex gap-2 justify-between">
+														<Badge variant="outline">{resource.category}</Badge>
+														<Badge
+															variant={
+																resource.isActive ? "default" : "secondary"
+															}
+														>
+															{resource.isActive ? "Published" : "Draft"}
+														</Badge>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="font-medium hidden sm:table-cell">
 												{resource.title}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<Badge variant="outline">{resource.category}</Badge>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<Badge
 													variant={resource.isActive ? "default" : "secondary"}
 												>
 													{resource.isActive ? "Published" : "Draft"}
 												</Badge>
 											</TableCell>
-											<TableCell className="text-muted-foreground">
+											<TableCell className="text-muted-foreground hidden sm:table-cell">
 												{format(new Date(resource?.createdAt), "MMM d, yyyy")}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<div className="flex items-center gap-1">
 													<Button
 														variant="ghost"

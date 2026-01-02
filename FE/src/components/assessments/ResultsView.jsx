@@ -85,7 +85,7 @@ const ResultsView = ({ result, setResult, setSelectedAssessment }) => {
 						</Alert>
 					)}
 
-					<div className="flex gap-3 pt-4">
+					<div className="flex md:flex-row flex-col gap-3 pt-4">
 						<Button variant="outline" onClick={handleRetake} className="flex-1">
 							<RotateCcw className="mr-2 h-4 w-4" />
 							Retake Assessment

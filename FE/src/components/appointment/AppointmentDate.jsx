@@ -6,7 +6,7 @@ const AppointmentDate = ({ dates, selectedDate, setSelectedDate }) => {
 			<p className="text-sm font-medium text-foreground mb-3">
 				Available Dates
 			</p>
-			<div className="flex gap-2 overflow-x-auto pb-2">
+			<div className="md:flex grid grid-cols-2 gap-2 overflow-x-auto pb-2">
 				{dates.map((date) => {
 					const dateStr = date?.toISOString().split("T")[0];
 					const isSelected = selectedDate === dateStr;

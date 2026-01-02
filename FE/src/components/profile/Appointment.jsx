@@ -31,6 +31,9 @@ import { Badge } from "../ui/badge";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
+import { User2 } from "lucide-react";
+import { HandHelping } from "lucide-react";
+import { CalendarPlus2 } from "lucide-react";
 
 const statusColors = {
 	pending: "bg-yellow-500",
@@ -131,12 +134,20 @@ const Appointment = () => {
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader>
+							<TableHeader className="hidden sm:table-header-group">
 								<TableRow>
-									<TableHead>Student</TableHead>
-									<TableHead>Counselor</TableHead>
-									<TableHead>Date & Time</TableHead>
-									<TableHead>Status</TableHead>
+									<TableHead className="font-bold text-base">
+										Student
+									</TableHead>
+									<TableHead className="font-bold text-base">
+										Counselor
+									</TableHead>
+									<TableHead className="font-bold text-base">
+										Date & Time
+									</TableHead>
+									<TableHead className="font-bold text-base">
+										Status
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -153,19 +164,60 @@ const Appointment = () => {
 									filteredAppointments?.map((appointment) => (
 										<TableRow key={appointment.id}>
 											<TableCell>
-												<div>
-													<div className="font-medium">
-														{user.name || "N/A"}
+												<div
+													className={`rounded-lg p-2 ${
+														statusColors[appointment?.status]
+													} sm:bg-white text-white sm:text-black space-y-1.5 sm:space-y-0`}
+												>
+													<span className="flex justify-center rounded-2xl bg-white text-black sm:hidden">
+														{appointment?.status}
+													</span>
+													<div className="flex items-center gap-2">
+														<div className="sm:hidden">
+															<User2 />
+														</div>
+														<div>
+															<div className="font-medium ">
+																{user.name || "N/A"}
+															</div>
+															<div className="text-xs sm:text-sm text-neutral-400  sm:text-muted-foreground">
+																{user.email}
+															</div>
+														</div>
 													</div>
-													<div className="text-sm text-muted-foreground">
-														{appointment?.Student?.email}
+													<div className="sm:hidden">
+														<div className="flex items-center gap-2">
+															<span>
+																<HandHelping />
+															</span>
+															{appointment?.Counsellor?.name || "Unassigned"}
+														</div>
+														<div className="flex items-center gap-2">
+															<span>
+																<CalendarPlus2 />
+															</span>
+															<div>
+																<div>
+																	{format(
+																		new Date(appointment?.datetime),
+																		"MMM d, yyyy"
+																	)}
+																</div>
+																<div className="text-sm text-neutral-400 sm:text-muted-foreground">
+																	{format(
+																		new Date(appointment?.datetime),
+																		"h:mm a"
+																	)}
+																</div>
+															</div>
+														</div>
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												{appointment?.Counsellor?.name || "Unassigned"}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<div>
 													<div>
 														{format(
@@ -178,7 +230,7 @@ const Appointment = () => {
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<Badge
 													className={`${
 														statusColors[appointment?.status]

@@ -346,13 +346,13 @@ const Stats = () => {
 
 	return (
 		<div className="container space-y-6 py-8">
-			<div className="flex items-center justify-between mb-8">
+			<div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-8">
 				<div>
 					<div className="flex items-center gap-3 mb-2">
 						<div className="p-2 rounded-lg bg-primary/10">
 							<ChartNetwork className="h-6 w-6 text-primary" />
 						</div>
-						<h1 className="text-3xl font-bold text-foreground">
+						<h1 className="text-3xl font-bold text-foreground flex flex-col md:flex-row md:gap-3 md:items-end">
 							Admin Stats
 							<Link
 								to="/admin"

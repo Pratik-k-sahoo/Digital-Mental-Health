@@ -26,6 +26,9 @@ import useGetQuery from "@/hooks/useGetQuery";
 import { fetchAllUsers } from "@/lib/apiServices";
 import AnonymizationToggle from "./AnonymizationToggle";
 import useAnonymization from "@/hooks/useAnonymization";
+import { UserCheck } from "lucide-react";
+import { MailCheck } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
 
 const AdminUsersTab = () => {
 	const [searchQuery, setSearchQuery] = useState("");
@@ -43,22 +46,6 @@ const AdminUsersTab = () => {
 	});
 
 	if (isError) {
-		if (error?.status === 401) {
-			return (
-				<div className="container py-20 flex items-center justify-center">
-					<p className="text-center">
-						Please{" "}
-						<Link
-							to="/login"
-							className="text-accent underline underline-offset-2"
-						>
-							login
-						</Link>{" "}
-						in again.
-					</p>
-				</div>
-			);
-		}
 		return (
 			<div className="container py-20 flex items-center justify-center">
 				<p className="text-center">{error?.message}</p>
@@ -76,7 +63,7 @@ const AdminUsersTab = () => {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
 					<div>
 						<CardTitle className="flex items-center gap-2">
 							<User className="h-5 w-5" />
@@ -88,8 +75,8 @@ const AdminUsersTab = () => {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div className="flex items-center gap-4 mb-6">
-					<div className="relative flex-1 max-w-sm">
+				<div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+					<div className="relative flex-1 w-full max-w-sm order-2 md:order-1">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
 							placeholder="Search users..."
@@ -98,7 +85,9 @@ const AdminUsersTab = () => {
 							className="pl-9"
 						/>
 					</div>
-					<Badge variant="secondary">{users?.length} users</Badge>
+					<Badge variant="secondary" className="order-1 md:order-2">
+						{users?.length} users
+					</Badge>
 				</div>
 
 				{isLoading ? (
@@ -108,12 +97,12 @@ const AdminUsersTab = () => {
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader>
+							<TableHeader className="hidden sm:table-header-group">
 								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>Email</TableHead>
-									<TableHead>Role</TableHead>
-									<TableHead>Joined</TableHead>
+									<TableHead className="font-bold text-base">Name</TableHead>
+									<TableHead className="font-bold text-base">Email</TableHead>
+									<TableHead className="font-bold text-base">Role</TableHead>
+									<TableHead className="font-bold text-base">Joined</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -129,13 +118,43 @@ const AdminUsersTab = () => {
 								) : (
 									filteredUsers?.map((user) => (
 										<TableRow key={user?.id}>
-											<TableCell className="font-medium">
+											<TableCell className="font-medium sm:hidden">
+												<div
+													className={`space-y-1.5 p-2 rounded-2xl ${
+														user?.role === "admin"
+															? "bg-destructive text-white"
+															: user?.role === "counsellor"
+															? "bg-primary text-primary-foreground"
+															: "bg-secondary text-secondary-foreground"
+													}`}
+												>
+													<span className="flex justify-center underline underline-offset-2 font-bold">
+														{user?.role}
+													</span>
+													<div className="flex items-center gap-2">
+														<UserCheck />
+														{anonymizeName(user?.name) || "Not set"}
+													</div>
+													<div className="flex items-center gap-2">
+														<MailCheck />
+														{anonymizeEmail(user?.email) || "N/A"}
+													</div>
+													<div className="flex items-center gap-2">
+														<CircleCheckBig />
+														{format(
+															new Date(user?.createdAt?.replace(" ", "T")),
+															"MMM d, yyyy"
+														)}
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="hidden sm:table-cell">
 												{anonymizeName(user?.name) || "Not set"}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												{anonymizeEmail(user?.email) || "N/A"}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<Badge
 													variant={
 														user?.role === "admin"
@@ -148,7 +167,7 @@ const AdminUsersTab = () => {
 													{user?.role || "user"}
 												</Badge>
 											</TableCell>
-											<TableCell className="text-muted-foreground">
+											<TableCell className="text-muted-foreground hidden sm:table-cell">
 												{format(
 													new Date(user?.createdAt?.replace(" ", "T")),
 													"MMM d, yyyy"

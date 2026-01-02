@@ -168,7 +168,7 @@ const QuestionnaireView = ({ type, setResult, setSelectedAssessment }) => {
 						))}
 					</RadioGroup>
 
-					<div className="flex gap-3 pt-4">
+					<div className="flex flex-col md:flex-row gap-3 pt-4">
 						<Button
 							variant="outline"
 							onClick={handlePrevious}

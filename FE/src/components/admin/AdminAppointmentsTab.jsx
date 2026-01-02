@@ -40,6 +40,8 @@ import {
 import useAppMutation from "@/hooks/useAppMutation";
 import useAnonymization from "@/hooks/useAnonymization";
 import AnonymizationToggle from "./AnonymizationToggle";
+import { User } from "lucide-react";
+import { HandHelping } from "lucide-react";
 
 const statusColors = {
 	pending: "bg-yellow-500",
@@ -51,7 +53,7 @@ const statusColors = {
 const AdminAppointmentsTab = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
-  const { anonymizeEmail, anonymizeName } = useAnonymization();
+	const { anonymizeEmail, anonymizeName } = useAnonymization();
 	const {
 		data: appointments,
 		isLoading,
@@ -76,22 +78,6 @@ const AdminAppointmentsTab = () => {
 	});
 
 	if (isError) {
-		if (error?.status === 401) {
-			return (
-				<div className="container py-20 flex items-center justify-center">
-					<p className="text-center">
-						Please{" "}
-						<Link
-							to="/login"
-							className="text-accent underline underline-offset-2"
-						>
-							login
-						</Link>{" "}
-						in again.
-					</p>
-				</div>
-			);
-		}
 		return (
 			<div className="container py-20 flex items-center justify-center">
 				<p className="text-center">{error?.message}</p>
@@ -124,7 +110,7 @@ const AdminAppointmentsTab = () => {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center justify-between">
+				<div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between">
 					<div>
 						<CardTitle className="flex items-center gap-2">
 							<Calendar className="h-5 w-5" />
@@ -134,7 +120,7 @@ const AdminAppointmentsTab = () => {
 							View and manage counseling appointments
 						</CardDescription>
 					</div>
-          <AnonymizationToggle />
+					<AnonymizationToggle />
 				</div>
 			</CardHeader>
 			<CardContent>
@@ -171,8 +157,8 @@ const AdminAppointmentsTab = () => {
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader>
-								<TableRow>
+							<TableHeader className="font-bold text-base">
+								<TableRow className="hidden sm:table-row">
 									<TableHead>Student</TableHead>
 									<TableHead>Counselor</TableHead>
 									<TableHead>Date & Time</TableHead>
@@ -193,7 +179,93 @@ const AdminAppointmentsTab = () => {
 								) : (
 									filteredAppointments?.map((appointment) => (
 										<TableRow key={appointment.id}>
-											<TableCell>
+											<TableCell className={`sm:hidden`}>
+												<div
+													className={`${
+														statusColors[appointment?.status]
+													} text-white space-y-1.5 p-2 rounded-2xl`}
+												>
+													<div className="flex items-center justify-center gap-1">
+														{appointment?.status === "pending" && (
+															<>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	onClick={() =>
+																		updateStatus(appointment?.id, "confirmed")
+																	}
+																	title="Confirm"
+																	className={"p-2 hover:bg-primary"}
+																	asChild
+																>
+																	<Check className="h-4 w-4 text-green-500" />
+																</Button>
+																<Button
+																	variant="ghost"
+																	size="icon"
+																	onClick={() =>
+																		updateStatus(appointment?.id, "cancelled")
+																	}
+																	title="Cancel"
+																	className={"p-2 hover:bg-destructive"}
+																	asChild
+																>
+																	<X className="h-4 w-4 text-red-500" />
+																</Button>
+															</>
+														)}
+														{appointment?.status === "confirmed" && (
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() =>
+																	updateStatus(appointment?.id, "completed")
+																}
+																title="Mark Complete"
+																asChild
+																className="p-2 hover:bg-accent"
+															>
+																<Check className="h-4 w-4 text-blue-500" />
+															</Button>
+														)}
+													</div>
+													<div className="flex gap-2 items-center">
+														<User />
+														<div>
+															<div className="font-medium">
+																{anonymizeName(appointment?.Student?.name) ||
+																	"N/A"}
+															</div>
+															<div className="text-sm text-neutral-300">
+																{anonymizeEmail(appointment?.Student?.email)}
+															</div>
+														</div>
+													</div>
+													<div className="flex gap-2 items-center">
+														<HandHelping />
+														{anonymizeName(appointment?.Counsellor?.name) ||
+															"Unassigned"}
+													</div>
+													<div className="flex gap-2 items-center">
+														<Calendar />
+														<div>
+															<div>
+																{format(
+																	new Date(appointment?.datetime),
+																	"MMM d, yyyy"
+																)}
+															</div>
+															<div className="text-sm text-neutral-300">
+																{format(
+																	new Date(appointment?.datetime),
+																	"h:mm a"
+																)}
+															</div>
+														</div>
+													</div>
+												</div>
+											</TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<div>
 													<div className="font-medium">
 														{anonymizeName(appointment?.Student?.name) || "N/A"}
@@ -203,11 +275,11 @@ const AdminAppointmentsTab = () => {
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												{anonymizeName(appointment?.Counsellor?.name) ||
 													"Unassigned"}
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<div>
 													<div>
 														{format(
@@ -220,7 +292,7 @@ const AdminAppointmentsTab = () => {
 													</div>
 												</div>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<Badge
 													className={`${
 														statusColors[appointment?.status]
@@ -229,7 +301,7 @@ const AdminAppointmentsTab = () => {
 													{appointment?.status}
 												</Badge>
 											</TableCell>
-											<TableCell>
+											<TableCell className="hidden sm:table-cell">
 												<div className="flex items-center gap-1">
 													{appointment?.status === "pending" && (
 														<>

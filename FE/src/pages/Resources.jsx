@@ -53,15 +53,17 @@ const TYPE = [
 	{ id: "article", label: "Article", Icon: FileText },
 	{ id: "video", label: "Video", Icon: Video },
 	{ id: "audio", label: "Audio", Icon: Headphones },
-	{ id: "NA", label: "NIL" },
+	{ id: "NA", label: "DEFAULT" },
 ];
 
 const Resources = () => {
 	const dispatch = useDispatch();
 	const [resourceCat, setResourceCat] = useState("all");
-	const [resourceType, setResourceType] = useState("");
+	const [resourceType, setResourceType] = useState("na");
+	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedResource, setSelectedResource] = useState("");
 	const [open, setOpen] = useState(false);
+	const [filteredResources, setFilteredResources] = useState([]);
 
 	const handleResourceCat = (e) => {
 		setResourceCat(e);
@@ -90,9 +92,45 @@ const Resources = () => {
 
 	useEffect(() => {
 		if (!isFetchResourcesSuccess) return;
-
+		setFilteredResources(resources);
 		dispatch(setResources(resources));
 	}, [isFetchResourcesSuccess, dispatch, resources]);
+
+	useEffect(() => {
+		const filtered = resources?.filter((resource) => {
+			const search = searchQuery?.toLowerCase();
+			return (
+				resource?.title?.toLowerCase()?.includes(search) ||
+				resource?.description?.toLowerCase()?.includes(search)
+			);
+		});
+		setFilteredResources(filtered);
+	}, [searchQuery, resources]);
+
+	useEffect(() => {
+		if (resourceCat === "all") {
+			setFilteredResources(resources);
+			return;
+		}
+		const filtered = resources?.filter((resource) => {
+			const cat = resourceCat?.toLowerCase();
+			return resource?.category?.toLowerCase() === cat;
+		});
+		setFilteredResources(filtered);
+	}, [resourceCat, resources]);
+
+	useEffect(() => {
+		console.log(resourceType);
+		if (resourceType.toLowerCase() === "na") {
+			setFilteredResources(resources);
+			return;
+		}
+		const filtered = resources?.filter((resource) => {
+			const type = resourceType?.toLowerCase();
+			return resource?.type?.toLowerCase() === type;
+		});
+		setFilteredResources(filtered);
+	}, [resourceType, resources]);
 
 	const ResourceIcon = ({ type }) => {
 		const typeConfig = TYPE.find((t) => t.id === type);
@@ -159,10 +197,16 @@ const Resources = () => {
 					))}
 				</div>
 
-				<div className="flex gap-3 justify-center items-center mb-10">
-					<Input type="text" placeholder="Type to search" className={"w-72"} />
+				<div className="flex flex-col md:flex-row gap-3 justify-center items-center mb-10">
+					<Input
+						type="text"
+						placeholder="Type to search resources"
+						className="w-72"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
 					<Select onValueChange={handleResourceType}>
-						<SelectTrigger className="w-[180px]">
+						<SelectTrigger className="w-72 md:w-[180px]">
 							<SelectValue placeholder="Type of Content" />
 						</SelectTrigger>
 						<SelectContent>
@@ -176,7 +220,7 @@ const Resources = () => {
 				</div>
 
 				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{resources?.map((resource) => (
+					{filteredResources?.map((resource) => (
 						<Card
 							variant="resource"
 							key={resource?.id}

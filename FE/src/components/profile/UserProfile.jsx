@@ -96,7 +96,7 @@ const UserProfile = () => {
 	};
 
 	return (
-		<div>
+		<div className="space-y-4">
 			<Card>
 				<CardHeader>
 					<CardTitle>Profile Information</CardTitle>
@@ -208,7 +208,7 @@ const UserProfile = () => {
 								)}
 							/>
 							<Separator />
-							<div className="flex items-center gap-8">
+							<div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-8">
 								<Button type="submit" disabled={isPending} className="w-fit">
 									{isPending ? (
 										<>

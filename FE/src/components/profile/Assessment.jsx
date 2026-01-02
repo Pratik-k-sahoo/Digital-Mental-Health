@@ -31,10 +31,7 @@ import { BarChart3 } from "lucide-react";
 import useGetQuery from "@/hooks/useGetQuery";
 import { fetchAssessmentHistory } from "@/lib/apiServices";
 import { useMemo } from "react";
-import {
-	getLatestAssessment,
-	getSeverityColor,
-} from "@/lib/utils";
+import { getLatestAssessment, getSeverityColor } from "@/lib/utils";
 import { Minus } from "lucide-react";
 import { TrendingUp } from "lucide-react";
 import { TrendingDown } from "lucide-react";
@@ -116,36 +113,36 @@ const Assessment = () => {
 
 	const hasChartData = chartData.combinedData.length >= 2;
 
-  
-const getAssessmentIcon = (type) => {
-	return type.toLowerCase().includes("phq") ? (
-		<Heart className="h-4 w-4" />
-	) : (
-		<Brain className="h-4 w-4" />
-	);
-};
+	const getAssessmentIcon = (type) => {
+		return type.toLowerCase().includes("phq") ? (
+			<Heart className="h-4 w-4" />
+		) : (
+			<Brain className="h-4 w-4" />
+		);
+	};
 
-const getTrendIcon = (type) => {
-	const typeAssessments = assessments.filter(
-		(a) => a.type.toLowerCase() === type.toLowerCase()
-	);
-	if (typeAssessments.length < 2)
+	const getTrendIcon = (type) => {
+		const typeAssessments = assessments.filter(
+			(a) => a.type.toLowerCase() === type.toLowerCase()
+		);
+		if (typeAssessments.length < 2)
+			return <Minus className="h-4 w-4 text-muted-foreground" />;
+
+		const latest = typeAssessments[0].score;
+		const previous = typeAssessments[1].score;
+
+		if (latest < previous)
+			return <TrendingDown className="h-4 w-4 text-sage" />;
+		if (latest > previous)
+			return <TrendingUp className="h-4 w-4 text-destructive" />;
 		return <Minus className="h-4 w-4 text-muted-foreground" />;
-
-	const latest = typeAssessments[0].score;
-	const previous = typeAssessments[1].score;
-
-	if (latest < previous) return <TrendingDown className="h-4 w-4 text-sage" />;
-	if (latest > previous)
-		return <TrendingUp className="h-4 w-4 text-destructive" />;
-	return <Minus className="h-4 w-4 text-muted-foreground" />;
-};
+	};
 
 	const latestPHQ9 = getLatestAssessment("phq9", assessments);
 	const latestGAD7 = getLatestAssessment("gad7", assessments);
 
 	return (
-		<div>
+		<div className="flex flex-col gap-4">
 			<div className="grid md:grid-cols-2 gap-4">
 				<Card>
 					<CardHeader className="pb-3">
@@ -225,6 +222,7 @@ const getTrendIcon = (type) => {
 								<AreaChart
 									data={chartData.combinedData}
 									margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                  
 								>
 									<defs>
 										<linearGradient
@@ -365,12 +363,12 @@ const getTrendIcon = (type) => {
 							</Button>
 						</div>
 					) : (
-						<ScrollArea className="h-[400px] pr-4">
+						<ScrollArea className="h-[400px] pr-0 md:pr-4">
 							<div className="space-y-3">
 								{assessments?.map((assessment) => (
 									<div
 										key={assessment.id}
-										className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+										className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
 									>
 										<div className="flex items-center gap-3">
 											<div className="h-10 w-10 rounded-full bg-background flex items-center justify-center">
@@ -388,7 +386,7 @@ const getTrendIcon = (type) => {
 												</p>
 											</div>
 										</div>
-										<div className="flex items-center gap-3">
+										<div className="flex flex-col sm:flex-row items-end w-full sm:w-fit sm:items-center gap-3">
 											<span className="text-lg font-semibold">
 												{assessment?.score}
 											</span>

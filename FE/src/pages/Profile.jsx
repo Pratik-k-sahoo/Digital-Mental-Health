@@ -84,12 +84,17 @@ const Profile = () => {
 					className="space-y-6"
 				>
 					<TabsList
-						className={`grid w-fit mx-auto ${
-							user?.role === "student" ? "grid-cols-3" : "grid-cols-1"
+						className={`grid w-fit sm:w-full mx-auto h-auto ${
+							user?.role === "student"
+								? "sm:grid-cols-3 grid-cols-1"
+								: "grid-cols-1"
 						}`}
 					>
 						{user?.role === "student" && (
-							<TabsTrigger value="history" className="flex items-center gap-2">
+							<TabsTrigger
+								value="history"
+								className="w-full flex items-center justify-start sm:justify-center text-center whitespace-normal leading-tight gap-2 cursor-pointer"
+							>
 								<History className="h-4 w-4" />
 								Assessment History
 							</TabsTrigger>
@@ -97,13 +102,16 @@ const Profile = () => {
 						{user?.role === "student" && (
 							<TabsTrigger
 								value="appointment"
-								className="flex items-center gap-2"
+								className="w-full flex items-center justify-start sm:justify-center text-center whitespace-normal leading-tight gap-2 cursor-pointer"
 							>
 								<History className="h-4 w-4" />
 								Appointment History
 							</TabsTrigger>
 						)}
-						<TabsTrigger value="settings" className="flex items-center gap-2">
+						<TabsTrigger
+							value="settings"
+							className="w-full flex items-center justify-start sm:justify-center text-center whitespace-normal leading-tight gap-2 cursor-pointer"
+						>
 							<Settings className="h-4 w-4" />
 							Account Settings
 						</TabsTrigger>

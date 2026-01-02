@@ -50,11 +50,11 @@ const Dashboard = () => {
 					<div className="p-2 rounded-lg bg-primary/10">
 						<Shield className="h-6 w-6 text-primary" />
 					</div>
-					<h1 className="text-3xl font-bold text-foreground">
+					<h1 className="text-3xl font-bold text-foreground flex flex-col md:flex-row md:gap-3 md:items-end">
 						Admin Dashboard
 						<Link
 							to="/admin/stats"
-							className="ml-2 underline underline-offset-2 text-xl text-peach"
+							className="underline underline-offset-2 text-xl text-peach"
 						>
 							See Stats
 						</Link>
