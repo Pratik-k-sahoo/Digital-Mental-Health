@@ -1,58 +1,106 @@
 const dotenv = require("dotenv");
 dotenv.config();
+const http = require("http");
 const express = require("express");
+const { Server } = require("socket.io");
+const socket = require("./utils/helper");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 
 // own inputs
+const socketAuth = require("./middlewares/socketAuth");
+const EVENTS = require("../constants/socketEvent");
 const { testConnection, sequelize } = require("./config/db");
 const user = require("./routes/user");
 const assessment = require("./routes/assessment");
 const appointment = require("./routes/appointment");
 const resources = require("./routes/resources");
 const adminDashboard = require("./routes/adminDashboard");
+const forum = require("./routes/forum");
+
 const logger = require("./utils/logger");
 const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 8080;
+
+const io = new Server(server, {
+	cors: {
+		origin: [
+			"http://localhost:5173",
+			"https://digital-mental-health.vercel.app",
+		],
+		credentials: true,
+	},
+});
+
+io.use(socketAuth);
+socket.init(io);
+
+io.on("connection", (socket) => {
+	logger.info(`🔌 Socket connected: ${socket.id}`);
+
+	socket.on(EVENTS.JOIN_POST, (postId) => {
+		socket.join(`post-${postId}`);
+	});
+
+	socket.on(EVENTS.TYPING_START, ({ postId }) => {
+		if (!postId) return;
+
+		socket.to(`post-${postId}`).emit(EVENTS.TYPING_START, {
+			userId: socket.user.id,
+			name: socket.user.name,
+		});
+	});
+
+  socket.on(EVENTS.TYPING_STOP, ({ postId }) => {
+		if (!postId) return;
+
+		socket.to(`post-${postId}`).emit(EVENTS.TYPING_STOP, {
+			userId: socket.user.id,
+		});
+	});
+
+	socket.on("disconnect", () => {
+		logger.info(`❌ Socket disconnected: ${socket.id}`);
+	});
+});
 
 app.use(
 	cors({
 		origin: [
 			"http://localhost:5173",
-			"https://zmhp4r3q-5173.inc1.devtunnels.ms",
 			"https://digital-mental-health.vercel.app",
 		],
 		credentials: true,
-	})
+	}),
 );
 app.use(helmet());
 app.use(cookieParser());
 app.use(
-	morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } })
+	morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/health", (req, res) => {
-  const pool = sequelize.connectionManager.pool;
-  res
-		.status(200)
-		.json({
-			message: "OK✅",
-			total: pool.size,
-			idle: pool.available,
-			waiting: pool.pending,
-		});
+	const pool = sequelize.connectionManager.pool;
+	res.status(200).json({
+		message: "OK✅",
+		total: pool.size,
+		idle: pool.available,
+		waiting: pool.pending,
+	});
 });
 app.use("/api/user", user);
 app.use("/api/assessment", assessment);
 app.use("/api/appointment", appointment);
 app.use("/api/resource", resources);
 app.use("/api/admin/dashboard", adminDashboard);
+app.use("/api/forum", forum);
 
 app.use(errorHandler);
 
@@ -60,13 +108,12 @@ async function start() {
 	await testConnection();
 	logger.info("DB Connected.");
 
-	if (process.env.NODE_ENV !== "development") {
+	if (process.env.NODE_ENV === "development") {
 		await sequelize.sync({
 			alter: true,
 		});
-		console.log("Models synced");
 	}
-	app.listen(PORT, "0.0.0.0", () => {
+	server.listen(PORT, "0.0.0.0", () => {
 		console.log(`✅ Server connected successfully at PORT ${PORT}. 🚀`);
 		logger.info(`✅ Server connected successfully at PORT ${PORT}. 🚀`);
 	});

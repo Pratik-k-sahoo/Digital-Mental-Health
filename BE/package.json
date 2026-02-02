@@ -14,16 +14,20 @@
 	"description": "",
 	"dependencies": {
 		"bcryptjs": "^3.0.3",
+		"cookie": "^1.1.1",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.2.1",
+		"express-rate-limit": "^8.2.1",
 		"express-validator": "^7.3.1",
 		"helmet": "^8.1.0",
 		"jsonwebtoken": "^9.0.3",
 		"morgan": "^1.10.1",
 		"mysql2": "^3.15.3",
 		"sequelize": "^6.37.7",
+		"socket.io": "^4.8.3",
 		"winston": "^3.19.0"
-	}
+	},
+	"packageManager": "pnpm@10.28.1+sha512.7d7dbbca9e99447b7c3bf7a73286afaaf6be99251eb9498baefa7d406892f67b879adb3a1d7e687fc4ccc1a388c7175fbaae567a26ab44d1067b54fcb0d6a316"
 }

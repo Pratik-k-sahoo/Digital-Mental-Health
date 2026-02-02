@@ -6,7 +6,6 @@ const { where } = require("sequelize");
 
 async function register(req, res) {
 	try {
-		console.log(req.body);
 		const { name, email, password, role, department, year } = req.body;
 		const passwordHashed = await bcrypt.hash(password, 16);
 
@@ -55,6 +54,7 @@ async function register(req, res) {
 			.json({
 				user: userJSON,
 				message: "User created successfully.",
+				token,
 			});
 	} catch (error) {
 		console.error(error?.errors?.[0]?.message || error?.message || error);
@@ -129,7 +129,40 @@ async function login(req, res) {
 			.json({
 				user: userJSON,
 				message: "User logged-in successfully.",
+				token,
 			});
+	} catch (error) {
+		console.error(error?.errors?.[0]?.message || error?.message || error);
+		return res.status(500).json({
+			error: error?.errors?.[0]?.message || error?.message || error,
+		});
+	}
+}
+
+async function forgetPassword(req, res) {
+	try {
+		const { email, newPassword } = req.body;
+
+		const user = await User.findOne({
+			where: {
+				email,
+			},
+		});
+
+		if (!user)
+			return res.status(401).json({
+				message: "Invalid email",
+			});
+
+		const passwordHashed = await bcrypt.hash(newPassword, 16);
+
+		await user.update({
+			password: passwordHashed,
+		});
+
+		return res.status(200).json({
+			message: "Password reset successfully.",
+		});
 	} catch (error) {
 		console.error(error?.errors?.[0]?.message || error?.message || error);
 		return res.status(500).json({
@@ -218,7 +251,6 @@ async function updateAlertThreshold(req, res) {
 			user: { ...user, threshold },
 		});
 	} catch (error) {
-		console.log(error);
 		return res.status(500).json({
 			error: error?.errors?.[0]?.message || error?.message || error,
 		});
@@ -261,7 +293,6 @@ async function updateUserDetails(req, res) {
 		}
 
 		if (req.body.newPassword) {
-			console.log("Updating password");
 			if (!req.body.currentPassword) {
 				return res.status(400).json({
 					message: "Current password is required to change password",
@@ -305,7 +336,6 @@ async function updateUserDetails(req, res) {
 			changes,
 		});
 	} catch (error) {
-		console.log(error);
 		return res.status(500).json({
 			error: error?.errors?.[0]?.message || error?.message || error,
 		});
@@ -319,4 +349,5 @@ module.exports = {
 	getMe,
 	updateAlertThreshold,
 	updateUserDetails,
+	forgetPassword,
 };

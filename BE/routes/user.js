@@ -7,6 +7,7 @@ const {
 	getMe,
 	updateAlertThreshold,
 	updateUserDetails,
+  forgetPassword,
 } = require("../controllers/user");
 const {
 	regstrationSchema,
@@ -17,6 +18,7 @@ const { authMiddleware, requireRole } = require("../middlewares/auth");
 
 router.post("/register", regstrationSchema, handleValidationResult, register);
 router.post("/login", loginSchema, handleValidationResult, login);
+router.post("/forget", forgetPassword);
 router.patch("/update", authMiddleware, updateUserDetails);
 router.post("/logout", authMiddleware, logout);
 router.get("/auth", authMiddleware, getMe);

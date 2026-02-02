@@ -20,7 +20,6 @@ const assessmentSchema = [
 		.isIn(["PHQ9", "GAD7", "GHQ"])
 		.withMessage("Invalid assessment type."),
 	body("answers").custom((value, { req }) => {
-		console.log(value);
 		const answers = [...value];
 		let valid = true;
 		if (req.body.type === "PHQ9") {

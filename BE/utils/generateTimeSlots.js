@@ -1,5 +1,4 @@
 function generateTimeSlots(startTime, endTime, slotDuration) {
-	console.log(startTime, endTime, slotDuration);
 	const slots = [];
 	let start =
 		parseInt(startTime?.toString()?.slice(0, 2)) * 60 +
@@ -7,7 +6,6 @@ function generateTimeSlots(startTime, endTime, slotDuration) {
 	const end =
 		parseInt(endTime?.toString()?.slice(0, 2)) * 60 +
 		parseInt(endTime?.toString()?.slice(3));
-	console.log("Start in minutes:", start, "End in minutes:", end);
 
 	while (start + slotDuration <= end) {
 		const h = String(Math.floor(start / 60)).padStart(2, "0");

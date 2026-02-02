@@ -5,6 +5,9 @@ const {
 	Appointment,
 	Assessment,
 	ResourceUsage,
+	ForumPost,
+	ForumComment,
+	Flag,
 } = require("../models");
 
 async function getOveriewStats(req, res) {
@@ -19,6 +22,9 @@ async function getOveriewStats(req, res) {
 			totalConfirmedAppointments,
 			totalCompletedAppointments,
 			totalAssessments,
+			totalPosts,
+			totalComments,
+			flaggedPosts,
 		] = await Promise.all([
 			User.count(),
 			User.count({ where: { role: "student" } }),
@@ -29,6 +35,9 @@ async function getOveriewStats(req, res) {
 			Appointment.count({ where: { status: "confirmed" } }),
 			Appointment.count({ where: { status: "completed" } }),
 			Assessment.count(),
+			ForumPost.count(),
+			ForumComment.count(),
+			ForumPost.count({ where: { status: "flagged" } }),
 		]);
 
 		res.status(200).json({
@@ -43,6 +52,9 @@ async function getOveriewStats(req, res) {
 				confirmedAppointments: totalConfirmedAppointments,
 				completedAppointments: totalCompletedAppointments,
 				assessments: totalAssessments,
+				posts: totalPosts,
+				comments: totalComments,
+				flaggedPosts,
 			},
 		});
 	} catch (error) {
@@ -104,13 +116,11 @@ async function topResources(req, res) {
 			limit: 5,
 			subQuery: false,
 		});
-		console.log(data);
 		res.status(200).json({
 			message: "Top resources fetched successfully",
 			data: data,
 		});
 	} catch (error) {
-		console.log(error);
 		res.status(500).json({ message: "Internal server error" });
 	}
 }
@@ -125,10 +135,7 @@ async function assessmentSeverityStats(req, res) {
 			group: ["severity"],
 		});
 		const dataByTypes = await Assessment.findAll({
-			attributes: [
-				"type",
-				"score",
-			],
+			attributes: ["type", "score"],
 		});
 		res.status(200).json({
 			message: "Assessment severity fetched successfully",
@@ -148,13 +155,11 @@ async function getAllUsers(req, res) {
 			order: [["createdAt", "DESC"]],
 		});
 
-		console.log(users);
 		res.status(200).json({
 			message: "Users fetched successfully",
 			users,
 		});
 	} catch (error) {
-		console.log(error);
 		res.status(500).json({ message: "Internal server error" });
 	}
 }
@@ -256,6 +261,215 @@ async function getAllAssessments(req, res) {
 	}
 }
 
+async function getAllPosts(req, res) {
+	try {
+		const posts = await ForumPost.findAndCountAll({
+			order: [["createdAt", "DESC"]],
+			include: [
+				{
+					model: User,
+					required: true,
+				},
+			],
+		});
+
+		res.status(200).json({
+			posts,
+		});
+	} catch (error) {
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function getReportedPosts(req, res) {
+	try {
+		const posts = await ForumPost.findAll({
+			include: [
+				{
+					model: Flag,
+					required: true,
+					attributes: ["id", "reason", "status", "reviewBatch", "createdAt"],
+					include: [{ model: User, attributes: ["id", "name", "role"] }],
+				},
+				{ model: User, attributes: ["id", "name"] },
+			],
+			attributes: {
+				include: [
+					[
+						Sequelize.literal(`(
+          SELECT COUNT(*)
+          FROM flags
+          WHERE flags.postId = ForumPost.id
+          AND flags.status = 'pending'
+          AND flags.reviewBatch = ForumPost.currentReviewBatch
+        )`),
+						"flagCount",
+					],
+				],
+			},
+			order: [[Sequelize.literal("flagCount"), "DESC"]],
+		});
+
+		res.status(200).json({
+			message: "Reported Posts fetched successfully.",
+			posts,
+		});
+	} catch (error) {
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function reviewPost(req, res) {
+	try {
+		const { status, isLocked } = req.body;
+
+		if (!["visible", "hidden", "flagged"].includes(status)) {
+			return res.status(400).json({ message: "Invalid status" });
+		}
+
+		if (![true, false].includes(isLocked)) {
+			return res.status(400).json({ message: "Invalid locking system" });
+		}
+
+		const post = await ForumPost.findByPk(req.params.id);
+		if (!post) return res.status(404).json({ message: "Post not found" });
+
+		post.status = status;
+		post.isLocked = isLocked;
+		await post.save();
+
+		return res.status(200).json({
+			post,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function reviewReport(req, res) {
+	try {
+		const post = await ForumPost.findByPk(req.params.id);
+		await Flag.update(
+			{
+				status: "resolved",
+			},
+			{
+				where: {
+					postId: req.params.id,
+					reviewBatch: post.currentReviewBatch,
+					status: "pending",
+				},
+			},
+		);
+
+		post.currentReviewBatch += 1;
+		await post.save();
+
+		return res.status(200).json({
+			post,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function getReportedComments(req, res) {
+	try {
+		const comments = await ForumComment.findAll({
+			include: [
+				{
+					model: Flag,
+					required: true,
+					attributes: ["id", "reason", "status", "reviewBatch", "createdAt"],
+					include: [{ model: User, attributes: ["id", "name", "role"] }],
+				},
+				{ model: User, attributes: ["id", "name"] },
+				{
+					model: ForumPost,
+					attributes: ["id", "title", "category"],
+					include: [{ model: User, attributes: ["id", "name", "role"] }],
+				},
+			],
+			attributes: {
+				include: [
+					[
+						Sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM flags
+              WHERE flags.commentId = ForumComment.id
+              AND flags.status = 'pending'
+              AND flags.reviewBatch = ForumComment.currentReviewBatch
+            )`),
+						"flagCount",
+					],
+				],
+			},
+			order: [[Sequelize.literal("flagCount"), "DESC"]],
+		});
+
+		res.status(200).json({
+			message: "Reported Comments fetched successfully.",
+			comments,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function reviewComment(req, res) {
+	try {
+		const { status } = req.body;
+		console.log(status);
+		if (!["visible", "hidden", "flagged"].includes(status)) {
+			return res.status(400).json({ message: "Invalid status" });
+		}
+
+		const comment = await ForumComment.findByPk(req.params.id);
+		if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+		comment.status = status;
+		await comment.save();
+
+		return res.status(200).json({
+			comment,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function reviewCommentReport(req, res) {
+	try {
+		const comment = await ForumComment.findByPk(req.params.id);
+		await Flag.update(
+			{
+				status: "resolved",
+			},
+			{
+				where: {
+					commentId: req.params.id,
+					reviewBatch: comment.currentReviewBatch,
+					status: "pending",
+				},
+			},
+		);
+
+		comment.currentReviewBatch += 1;
+		await comment.save();
+
+		return res.status(200).json({
+			comment,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
 module.exports = {
 	getOveriewStats,
 	resourcesByCategory,
@@ -265,4 +479,11 @@ module.exports = {
 	getAllResources,
 	getAllAppointments,
 	getAllAssessments,
+	getAllPosts,
+	getReportedPosts,
+	reviewPost,
+	reviewReport,
+	getReportedComments,
+	reviewComment,
+	reviewCommentReport,
 };

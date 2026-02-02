@@ -1,7 +1,29 @@
-const K_ANONYMITY = 5;
+const CRISIS_KEYWORDS = [
+	"suicide",
+	"kill myself",
+	"end my life",
+	"self harm",
+	"cut myself",
+	"die",
+];
 
-function enforceKAnonymity(rows, countField = "count") {
-	return rows.filter((row) => Number(row[countField]) >= K_ANONYMITY);
+function scanForCrisis(text = "") {
+	const lower = text.toLowerCase();
+	return CRISIS_KEYWORDS.some((keyword) => lower.includes(keyword));
 }
 
-module.exports = { enforceKAnonymity };
+let io;
+
+module.exports = {
+	scanForCrisis,
+	init: (serverIo) => {
+		io = serverIo;
+		return io;
+	},
+	getIO: () => {
+		if (!io) {
+			throw new Error("Socket.io not initialized");
+		}
+		return io;
+	},
+};

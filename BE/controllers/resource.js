@@ -10,9 +10,7 @@ async function getResources(req, res) {
 		if (type) where.type = type;
 		if (language) where.language = language;
 		if (tags) {
-			console.log(tags);
 			const tagArray = tags.split(",").map((t) => t.trim().toLowerCase());
-			console.log(tagArray);
 			where.tags = {
 				[Op.contains]: tagArray,
 			};
@@ -55,7 +53,6 @@ async function getResources(req, res) {
 }
 
 async function createResource(req, res) {
-	console.log(req.body);
 	try {
 		const {
 			title,
@@ -105,8 +102,6 @@ async function createResource(req, res) {
 			isActive: isResourceActive,
 		});
 
-		console.log(resource);
-
 		res.status(201).json({
 			message: "Resource addedd.",
 			resource,
@@ -119,7 +114,6 @@ async function createResource(req, res) {
 async function updateResource(req, res) {
 	try {
 		const { id } = req.params;
-		console.log(id);
 		const resource = await Resource.findByPk(id);
 		if (!resource)
 			return res.status(404).json({
@@ -140,7 +134,6 @@ async function updateResource(req, res) {
 async function deleteResource(req, res) {
 	try {
 		const { id } = req.params;
-		console.log(id);
 		const resource = await Resource.findByPk(id);
 		if (!resource)
 			return res.status(404).json({

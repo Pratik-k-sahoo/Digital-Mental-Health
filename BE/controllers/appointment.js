@@ -75,7 +75,6 @@ async function bookAppointment(req, res) {
 		const user = req.user;
 		const qrToken = crypto.randomUUID();
 		const { counsellorId, date, time, appointmentType } = req.body;
-		console.log("Request body: ", req.body);
 
 		if (!counsellorId || !date || !time || !appointmentType)
 			return res.status(400).json({
@@ -174,7 +173,6 @@ async function getAppointmentDetailsByToken(req, res) {
 		if (!appointment)
 			return res.status(404).json({ message: "Appointment not found" });
 
-		console.log("Appointment details fetched:", appointment);
 		return res.status(200).json({
 			message: "Appointment fetched successfully",
 			appointment,
@@ -251,7 +249,6 @@ async function updateAppointmentStatus(req, res) {
 	try {
 		const { id } = req.params;
 		const { status } = req.body;
-		console.log(status);
 
 		const allowed = ["confirmed", "cancelled", "completed"];
 
