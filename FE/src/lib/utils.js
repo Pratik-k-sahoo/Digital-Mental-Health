@@ -35,3 +35,5 @@ export const getSeverityColor = (severity) => {
 export const getLatestAssessment = (type, assessments) => {
 	return assessments?.find((a) => a.type.toLowerCase() === type.toLowerCase());
 };
+
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -18,7 +18,7 @@ const useAppMutation = (options = {}) => {
 		},
 		onError: (error, variables, context) => {
 			console.error(error);
-			options.onError?.(error, variables, context);
+			options?.onError?.(error, variables, context);
 		},
 	});
 };

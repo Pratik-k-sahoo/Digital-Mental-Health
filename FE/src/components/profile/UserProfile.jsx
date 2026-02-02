@@ -68,11 +68,13 @@ const UserProfile = () => {
 					...user,
 					...data?.user,
 				},
-				{ keepDirty: false }
+				{ keepDirty: false },
 			);
 		},
-		onError: (error) => {
-			console.error(error);
+		onError: () => {
+			toast.error("Something went wrong", {
+				description: "Please try again later⌚",
+			});
 		},
 	});
 

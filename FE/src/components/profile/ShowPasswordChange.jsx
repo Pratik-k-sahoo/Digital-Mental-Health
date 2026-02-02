@@ -45,13 +45,14 @@ const ShowPasswordChange = () => {
 			reset();
 			setOpen(false);
 		},
-		onError: (error) => {
-			console.error(error);
+		onError: () => {
+			toast.error("Something went wrong", {
+				description: "Please try again later⌚",
+			});
 		},
 	});
 
 	const handleChangePassword = async (e) => {
-		console.log(e);
 		await updateUser(e);
 	};
 

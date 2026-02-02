@@ -22,6 +22,7 @@ import { useNavigate } from "react-router";
 import { login } from "@/redux/slice/authSlice";
 import { useLocation } from "react-router";
 import { createUser as createUserApi } from "@/lib/apiServices";
+import { toast } from "sonner";
 
 const Signup = () => {
 	const dispatch = useDispatch();
@@ -49,17 +50,18 @@ const Signup = () => {
 		mutationFn: createUserApi,
 		invalidateQueries: ["user"],
 		onSuccess: (data) => {
+			toast.success(`Welcome ${data?.user?.name}`);
 			dispatch(login(data?.user));
-			console.log(from);
 			navigate(from, { replace: true });
 		},
-		onError: (error) => {
-			console.error(error);
+		onError: () => {
+			toast.error("Something went wrong", {
+				description: "Please try again later⌚",
+			});
 		},
 	});
 
 	const handleSignup = async (e) => {
-		console.log(e);
 		await createUser(e);
 	};
 

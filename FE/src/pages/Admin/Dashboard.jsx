@@ -20,7 +20,12 @@ import { Link } from "react-router";
 const TABS = [
 	{ id: "analytics", label: "Analytics", icon: BarChart3, required: ["ADMIN"] },
 	{ id: "users", label: "Users", icon: Users, required: ["ADMIN"] },
-	{ id: "resources", label: "Resources", icon: FileText, required: ["ADMIN"] },
+	{
+		id: "resources",
+		label: "Resources",
+		icon: FileText,
+		required: ["ADMIN", "COUNSELLOR"],
+	},
 	{
 		id: "appointments",
 		label: "Appointments",
@@ -31,7 +36,7 @@ const TABS = [
 		id: "peer-support",
 		label: "Peer Support",
 		icon: MessageSquare,
-		required: ["ADMIN", "COUNSELLOR"],
+		required: ["ADMIN", "COUNSELLOR", "PEER_VOLUNTEER"],
 	},
 ];
 
@@ -39,7 +44,7 @@ const Dashboard = () => {
 	const { user } = useSelector((state) => state.auth);
 
 	const TABSSHOW = TABS.filter((tab) =>
-		tab.required.includes(user?.role?.toUpperCase())
+		tab.required.includes(user?.role?.toUpperCase()),
 	);
 	const [activeTab, setActiveTab] = useState(TABSSHOW?.[0]?.id || "analytics");
 
@@ -52,12 +57,14 @@ const Dashboard = () => {
 					</div>
 					<h1 className="text-3xl font-bold text-foreground flex flex-col md:flex-row md:gap-3 md:items-end">
 						Admin Dashboard
-						<Link
-							to="/admin/stats"
-							className="underline underline-offset-2 text-xl text-peach"
-						>
-							See Stats
-						</Link>
+						{!user.role === "peer_volunteer" && (
+							<Link
+								to="/admin/stats"
+								className="underline underline-offset-2 text-xl text-peach"
+							>
+								See Stats
+							</Link>
+						)}
 					</h1>
 				</div>
 				<p className="text-muted-foreground">
@@ -72,7 +79,11 @@ const Dashboard = () => {
 			>
 				<TabsList
 					className={`grid w-fit mx-auto ${
-						user?.role === "counsellor" ? "grid-cols-2" : "grid-cols-5"
+						user?.role === "counsellor"
+							? "grid-cols-3"
+							: user?.role === "peer_volunteer"
+								? "grid-cols-1"
+								: "grid-cols-5"
 					} lg:inline-grid self-start`}
 				>
 					{TABSSHOW.map((tab) => (

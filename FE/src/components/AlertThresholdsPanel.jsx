@@ -34,6 +34,8 @@ import {
 import { Bell } from "lucide-react";
 import { Settings } from "lucide-react";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
+import { toast } from "sonner";
+import { sleep } from "@/lib/utils";
 
 const AlertThresholdsPanel = ({
 	stats,
@@ -56,7 +58,7 @@ const AlertThresholdsPanel = ({
 		reset,
 	} = form;
 
-	const { mutate: updateAlertThreshold } = useAppMutation({
+	const { mutateAsync: updateAlertThreshold, isPending } = useAppMutation({
 		mutationFn: updateAlertThresholdApi,
 		invalidateQueries: {
 			queryKey: ["adminDashboard", "threshold"],
@@ -68,6 +70,7 @@ const AlertThresholdsPanel = ({
 	});
 
 	const saveThreshold = async (e) => {
+		if (isPending) return;
 		const payload = {};
 		Object.keys(dirtyFields).forEach((key) => {
 			const value = e[key];
@@ -81,7 +84,20 @@ const AlertThresholdsPanel = ({
 			setIsOpen(false);
 			return;
 		}
-		await updateAlertThreshold(e);
+		toast.promise(
+			(async () => {
+				const res = await updateAlertThreshold(e);
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Updating alert threshold...",
+				success: "Alert threshold updated ✅",
+				error: "Failed to update alert threshold ❌",
+				position: "bottom-center",
+			},
+		);
 		setIsOpen(false);
 	};
 
@@ -160,15 +176,15 @@ const AlertThresholdsPanel = ({
 			avgPHQ9Score,
 			avgGAD7Score,
 			user,
-		]
+		],
 	);
 
 	const activeAlerts = alerts.filter(
-		(alert) => alert.enabled && alert.currentValue >= alert.threshold
+		(alert) => alert.enabled && alert.currentValue >= alert.threshold,
 	);
 
 	const criticalCount = activeAlerts.filter(
-		(a) => a.type === "critical"
+		(a) => a.type === "critical",
 	).length;
 
 	const warningCount = activeAlerts.filter((a) => a.type === "warning").length;

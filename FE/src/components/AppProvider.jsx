@@ -10,7 +10,6 @@ const AppProvider = ({ children }) => {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<TooltipProvider>
-					<Toaster />
 					{children}
 				</TooltipProvider>
 			</BrowserRouter>

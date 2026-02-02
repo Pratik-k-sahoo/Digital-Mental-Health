@@ -39,6 +39,8 @@ import { useDispatch } from "react-redux";
 import useGetQuery from "@/hooks/useGetQuery";
 import { createResourceUsage, fetchResources } from "@/lib/apiServices";
 import useAppMutation from "@/hooks/useAppMutation";
+import { toast } from "sonner";
+import { sleep } from "@/lib/utils";
 
 const CATEGORIES = [
 	{ id: "all", label: "All Resouces" },
@@ -80,9 +82,7 @@ const Resources = () => {
 	});
 
 	const {
-		mutate: resourceUsage,
-		isError: isResourceUsageError,
-		error: resourceUsageError,
+		mutateAsync: resourceUsage,
 	} = useAppMutation({
 		mutationFn: createResourceUsage,
 		invalidateQueries: {
@@ -120,7 +120,6 @@ const Resources = () => {
 	}, [resourceCat, resources]);
 
 	useEffect(() => {
-		console.log(resourceType);
 		if (resourceType.toLowerCase() === "na") {
 			setFilteredResources(resources);
 			return;
@@ -149,7 +148,20 @@ const Resources = () => {
 			setSelectedResource(resource);
 			setOpen(true);
 		}
-		resourceUsage({ resourceId: resource?.id });
+		toast.promise(
+			(async () => {
+				const res = await resourceUsage({ resourceId: resource?.id });
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Updating resource usage...",
+				success: "Resource usage updated ✅",
+				error: "Failed to update resource usage ❌",
+				position: "bottom-center",
+			},
+		);
 	};
 
 	const getYouTubeId = (url) => {
@@ -280,7 +292,7 @@ const Resources = () => {
 									height="315"
 									className="w-full"
 									src={`https://www.youtube.com/embed/${getYouTubeId(
-										selectedResource?.url
+										selectedResource?.url,
 									)}`}
 									title="YouTube video player"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

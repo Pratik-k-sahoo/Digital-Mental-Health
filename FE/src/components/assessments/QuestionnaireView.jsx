@@ -6,7 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import data from "@/assets/data.json";
-import { cn } from "@/lib/utils";
+import { cn, sleep } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
@@ -25,14 +25,6 @@ const QuestionnaireView = ({ type, setResult, setSelectedAssessment }) => {
 	} = useAppMutation({
 		mutationFn: createAssessmentApi,
 		invalidateQueries: ["assessments"],
-		onSuccess: (data) => {
-			console.log(data);
-			toast.success(data.message || "Assessment saved successfully.");
-		},
-		onError: (error) => {
-			console.error(error);
-			toast.error(error?.message || "Failed to save assessment.");
-		},
 	});
 
 	const questionKeys =
@@ -95,10 +87,23 @@ const QuestionnaireView = ({ type, setResult, setSelectedAssessment }) => {
 
 	const handleComplete = async (assessmentResult) => {
 		setResult(assessmentResult);
-		await createAssessment({
-			type: assessmentResult.type.toUpperCase(),
-			answers: assessmentResult.answers,
-		});
+    toast.promise(
+			(async () => {
+				const res = await createAssessment({
+					type: assessmentResult.type.toUpperCase(),
+					answers: assessmentResult.answers,
+				});
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Saving the assessment...",
+				success: "Assessment saved ✅",
+				error: "Failed to save the assessment ❌",
+				position: "bottom-center",
+			},
+		);
 	};
 
 	const handleBackToAssessments = () => {

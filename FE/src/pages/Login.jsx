@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { login } from "@/redux/slice/authSlice";
 import { useLocation } from "react-router";
 import ForgetPassword from "@/components/ForgetPassword";
+import { toast } from "sonner";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -38,16 +39,18 @@ const Login = () => {
 		mutationFn: loginUser,
 		invalidateQueries: ["user"],
 		onSuccess: (data) => {
+			toast.success(`Welcome Back ${data?.user?.name} ✨`);
 			dispatch(login(data?.user));
 			navigate(from, { replace: true });
 		},
-		onError: (error) => {
-			console.error(error);
+		onError: () => {
+			toast.error("Something went wrong", {
+				description: "Please try again later⌚",
+			});
 		},
 	});
 
 	const handleLogin = async (e) => {
-		console.log(e);
 		await userLogin(e);
 	};
 

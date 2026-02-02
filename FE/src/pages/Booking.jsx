@@ -13,7 +13,7 @@ import AppointmentCounsellor from "@/components/appointment/AppointmentCounsello
 import { toast } from "sonner";
 import { useCallback } from "react";
 import DisplayQrCode from "@/components/appointment/DisplayQrCode";
-import { formatTime } from "@/lib/utils";
+import { formatTime, sleep } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import DisplayConfirmation from "@/components/appointment/DisplayConfirmation";
 import useGetQuery from "@/hooks/useGetQuery";
@@ -90,7 +90,7 @@ const Booking = () => {
 	});
 
 	const {
-		mutate: bookAppointment,
+		mutateAsync: bookAppointment,
 		data,
 		isPending,
 		isError,
@@ -100,12 +100,6 @@ const Booking = () => {
 		mutationFn: bookAppointmentApi,
 		invalidateQueries: {
 			queryKey: ["appointments", "availableSlots"],
-		},
-		onSuccess: (data) => {
-			console.log("Appointment booked successfully:", data);
-		},
-		onError: (error) => {
-			console.error("Error booking appointment:", error);
 		},
 	});
 
@@ -132,13 +126,25 @@ const Booking = () => {
 	});
 
 	const handleBookAppointment = async () => {
-		setTimer(240);
-		await bookAppointment({
-			counsellorId: selectedCounsellor,
-			date: selectedDate,
-			time: selectedTime,
-			appointmentType: selectedType,
-		});
+		toast.promise(
+			(async () => {
+				const res = await bookAppointment({
+					counsellorId: selectedCounsellor,
+					date: selectedDate,
+					time: selectedTime,
+					appointmentType: selectedType,
+				});
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Booking appointment...",
+				success: "Appointment Booked ✅",
+				error: "Failed to book appointment ❌",
+				position: "bottom-center",
+			},
+		);
 	};
 
 	const resetBooking = useCallback(() => {

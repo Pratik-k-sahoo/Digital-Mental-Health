@@ -8,7 +8,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import useAppMutation from "@/hooks/useAppMutation";
-import useGetQuery from "@/hooks/useGetQuery";
 import {
 	confirmBooking as confirmBookingApi,
 	fetchBookingDetailsByToken,
@@ -21,6 +20,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
+import { toast } from "sonner";
 
 const ConfirmBooking = () => {
 	const navigate = useNavigate();
@@ -43,18 +43,19 @@ const ConfirmBooking = () => {
 		invalidateQueries: {
 			queryKey: ["appointments", "availableSlots"],
 		},
-		onSuccess: (data) => {
-			console.log("Appointment confirmed successfully:", data);
+		onSuccess: () => {
+			toast("Appointment confirmed successfully:");
 			setTimeout(() => {
 				navigate("/");
 			}, 10000);
 		},
 		onError: (error) => {
-			console.log(error);
+			toast.error("Something went wrong", {
+				description: "Please try again later⌚",
+			});
 			if (error?.status === 410) {
 				navigate("/booking");
 			}
-			console.error("Error confirming appointment:", error);
 		},
 	});
 

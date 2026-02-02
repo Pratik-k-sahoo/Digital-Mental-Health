@@ -18,8 +18,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip } from "@/components/ui/tooltip";
-import useAppMutation from "@/hooks/useAppMutation";
-import useGetQuery from "@/hooks/useGetQuery";
 import {
 	fetchAssessmentHistory,
 	fetchMyAppointments,

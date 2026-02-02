@@ -55,6 +55,7 @@ import { Edit } from "lucide-react";
 import { Trash2 } from "lucide-react";
 import { Switch } from "../ui/switch";
 import { ClosedCaption } from "lucide-react";
+import { sleep } from "@/lib/utils";
 
 const TYPES = ["Article", "Video", "Audio"];
 
@@ -70,8 +71,6 @@ const AdminResourcesTab = () => {
 	const {
 		data: resources,
 		isLoading,
-		isError,
-		error,
 	} = useGetQuery({
 		queryKey: ["adminDashboard", "resources"],
 		queryFn: fetchAllResources,
@@ -96,88 +95,104 @@ const AdminResourcesTab = () => {
 		},
 	});
 
-	const {
-		mutate: updateResource,
-		isError: isUpdateResourceError,
-		error: updateResourceError,
-	} = useAppMutation({
-		mutationFn: updateResourceApi,
-		invalidateQueries: {
-			queryKey: ["adminDashboard", "resources"],
-		},
-	});
+	const { mutateAsync: updateResource, isPending: updateResourcePending } =
+		useAppMutation({
+			mutationFn: updateResourceApi,
+			invalidateQueries: {
+				queryKey: ["adminDashboard", "resources"],
+			},
+		});
 
-	const {
-		mutate: createResource,
-		isError: isCreateResourceError,
-		error: createResourceError,
-	} = useAppMutation({
-		mutationFn: createResourceApi,
-		invalidateQueries: {
-			queryKey: ["adminDashboard", "resources"],
-		},
-	});
+	const { mutateAsync: createResource, isPending: createResourcePending } =
+		useAppMutation({
+			mutationFn: createResourceApi,
+			invalidateQueries: {
+				queryKey: ["adminDashboard", "resources"],
+			},
+		});
 
-	const {
-		mutate: deleteResource,
-		isError: isDeleteResourceError,
-		error: deleteResourceError,
-	} = useAppMutation({
-		mutationFn: deleteResourceApi,
-		invalidateQueries: {
-			queryKey: ["adminDashboard", "resources"],
-		},
-	});
+	const { mutateAsync: deleteResource, isPending: deleteResourcePending } =
+		useAppMutation({
+			mutationFn: deleteResourceApi,
+			invalidateQueries: {
+				queryKey: ["adminDashboard", "resources"],
+			},
+		});
 
 	const handleSubmit = async (e) => {
-		try {
-			if (editingResource) {
-				updateResource({
-					id: editingResource.id,
-					credentials: {
-						...e,
-						title: e.title ?? editingResource?.title,
-						category:
-							e.category.toLowerCase() ??
-							editingResource?.category?.toLowerCase(),
-						type: e.type.toLowerCase() ?? editingResource?.type?.toLowerCase(),
-						description: e.description ?? editingResource?.description,
-						url: e.url ?? editingResource?.url,
-						language: e.language ?? editingResource?.language,
-						tags: e.tags ?? editingResource?.tags,
-						isActive: e.isActive ?? editingResource?.isActive,
-					},
-				});
-			} else {
-				createResource({
-					...e,
-					title: e.title,
-					category: e.category.toLowerCase(),
-					type: e.type.toLowerCase(),
-					description: e.description,
-					url: e.url,
-					language: e.language,
-					tags: e.tags,
-					isActive: e.isActive,
-				});
-			}
+		if (updateResourcePending || createResourcePending || deleteResourcePending)
+			return;
 
-			setIsDialogOpen(false);
-			form.reset({
-				title: "",
-				category: "stress",
-				type: "article",
-				description: "",
-				url: "",
-				language: "",
-				isActive: false,
-				tags: "",
-			});
-			setEditingResource(null);
-		} catch (error) {
-			console.error("Error in resource:", error);
-			toast({ title: "Error in resource", variant: "destructive" });
+		if (editingResource) {
+			toast.promise(
+				(async () => {
+					const res = await updateResource({
+						id: editingResource.id,
+						credentials: {
+							...e,
+							title: e.title ?? editingResource?.title,
+							category:
+								e.category.toLowerCase() ??
+								editingResource?.category?.toLowerCase(),
+							type:
+								e.type.toLowerCase() ?? editingResource?.type?.toLowerCase(),
+							description: e.description ?? editingResource?.description,
+							url: e.url ?? editingResource?.url,
+							language: e.language ?? editingResource?.language,
+							tags: e.tags ?? editingResource?.tags,
+							isActive: e.isActive ?? editingResource?.isActive,
+						},
+					});
+					await sleep(1500);
+
+					return res;
+				})(),
+				{
+					loading: "Updating resource contents...",
+					success: "Resource contents updated ✅",
+					error: "Failed to update resource contents ❌",
+					position: "bottom-center",
+				},
+			);
+		} else {
+			toast.promise(
+				(async () => {
+					const res = await createResource({
+						...e,
+						title: e.title,
+						category: e.category.toLowerCase(),
+						type: e.type.toLowerCase(),
+						description: e.description,
+						url: e.url,
+						language: e.language,
+						tags: e.tags,
+						isActive: e.isActive,
+					});
+					await sleep(1500);
+
+					return res;
+				})(),
+				{
+					loading: "Uploading resource contents...",
+					success: "Resource contents are live now 🚀",
+					error: "Failed to upload resource contents ❌",
+					position: "bottom-center",
+				},
+			);
 		}
+
+		setIsDialogOpen(false);
+		form.reset({
+			title: "",
+			category: "stress",
+			type: "article",
+			description: "",
+			url: "",
+			language: "",
+			isActive: false,
+			tags: "",
+		});
+		setEditingResource(null);
 	};
 
 	const openEditDialog = (resource) => {
@@ -197,13 +212,26 @@ const AdminResourcesTab = () => {
 
 	const handleDelete = async (id) => {
 		if (!confirm("Are you sure you want to delete this resource?")) return;
-		await deleteResource({ id });
+		toast.promise(
+			(async () => {
+				const res = await deleteResource({ id });
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Deleting resource...",
+				success: "Resource deleted ✅",
+				error: "Failed to delete resource ❌",
+				position: "bottom-center",
+			},
+		);
 	};
 
 	const filteredResources = resources?.filter(
 		(resource) =>
 			resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			resource.category.toLowerCase().includes(searchQuery.toLowerCase())
+			resource.category.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	return (
@@ -566,7 +594,7 @@ const AdminResourcesTab = () => {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredResources.length === 0 ? (
+								{filteredResources?.length === 0 ? (
 									<TableRow>
 										<TableCell
 											colSpan={5}
@@ -583,7 +611,7 @@ const AdminResourcesTab = () => {
 													<div className="flex items-center justify-between">
 														{format(
 															new Date(resource?.createdAt),
-															"MMM d, yyyy"
+															"MMM d, yyyy",
 														)}
 														<div className="flex items-center gap-1">
 															<Button
@@ -607,7 +635,9 @@ const AdminResourcesTab = () => {
 														</div>
 													</div>
 													<div className="text-wrap flex gap-3">
-                            <ClosedCaption />{resource.title}</div>
+														<ClosedCaption />
+														{resource.title}
+													</div>
 													<div className="flex gap-2 justify-between">
 														<Badge variant="outline">{resource.category}</Badge>
 														<Badge

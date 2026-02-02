@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Brain } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, sleep } from "@/lib/utils";
 import { Heart } from "lucide-react";
 import { Trash2 } from "lucide-react";
 import { TrendingUpIcon } from "lucide-react";
@@ -44,22 +44,13 @@ const AssessmentHistory = () => {
 	});
 
 	const {
-		mutate: clearHistory,
+		mutateAsync: clearHistory,
 		isPending: clearPending,
 		isError: isClearError,
 		error: clearError,
 	} = useAppMutation({
 		mutationFn: clearAssessmentHistoryApi,
 		invalidateQueries: ["assessments", "history"],
-		onSuccess: (data) => {
-			toast.success(
-				data?.message || "Assessment history cleared successfully."
-			);
-		},
-		onError: (error) => {
-			console.error(error);
-			toast.error(error?.message || "Failed to clear assessment history.");
-		},
 	});
 
 	const phq9History = data?.filter((h) => h?.type === "PHQ9");
@@ -87,7 +78,6 @@ const AssessmentHistory = () => {
 	};
 
 	const TrendIcon = ({ trend }) => {
-		console.log(trend);
 		if (trend === "improving")
 			return <TrendingDown className="h-4 w-4 text-green-600" />;
 		if (trend === "declining")
@@ -166,7 +156,7 @@ const AssessmentHistory = () => {
 								<p
 									className={cn(
 										"text-sm",
-										getSeverityColor(phq9History?.[0]?.severity)
+										getSeverityColor(phq9History?.[0]?.severity),
 									)}
 								>
 									{phq9History?.[0]?.severity}
@@ -198,7 +188,7 @@ const AssessmentHistory = () => {
 								<p
 									className={cn(
 										"text-sm",
-										getSeverityColor(gad7History?.[0]?.severity)
+										getSeverityColor(gad7History?.[0]?.severity),
 									)}
 								>
 									{gad7History?.[0]?.severity}
@@ -234,7 +224,20 @@ const AssessmentHistory = () => {
 							</DrawerHeader>
 							<DrawerFooter>
 								<Button
-									onClick={clearHistory}
+									onClick={toast.promise(
+										(async () => {
+											const res = await clearHistory();
+											await sleep(1500);
+
+											return res;
+										})(),
+										{
+											loading: "Clearing assessment history...",
+											success: "Assessment history cleared ✅",
+											error: "Failed to clear assessment history ❌",
+											position: "bottom-center",
+										},
+									)}
 									className="w-fit mx-auto cursor-pointer"
 								>
 									Submit
@@ -316,7 +319,7 @@ const AssessmentHistory = () => {
 											<p
 												className={cn(
 													"text-sm text-center md:text-start",
-													getSeverityColor(item?.severity)
+													getSeverityColor(item?.severity),
 												)}
 											>
 												{item?.severity}

@@ -42,6 +42,8 @@ import useAnonymization from "@/hooks/useAnonymization";
 import AnonymizationToggle from "./AnonymizationToggle";
 import { User } from "lucide-react";
 import { HandHelping } from "lucide-react";
+import { toast } from "sonner";
+import { sleep } from "@/lib/utils";
 
 const statusColors = {
 	pending: "bg-yellow-500",
@@ -66,11 +68,7 @@ const AdminAppointmentsTab = () => {
 		cacheTime: 10 * 60 * 1000,
 	});
 
-	const {
-		mutate: updateBookingStatus,
-		isError: isUpdateBookingStatusError,
-		error: updateBookingStatusError,
-	} = useAppMutation({
+	const { mutateAsync: updateBookingStatus, isPending } = useAppMutation({
 		mutationFn: updateBookingStatusApi,
 		invalidateQueries: {
 			queryKey: ["adminDashboard", "appointments"],
@@ -104,7 +102,21 @@ const AdminAppointmentsTab = () => {
 	});
 
 	const updateStatus = async (id, updatedStatus) => {
-		await updateBookingStatus({ id, updatedStatus });
+		if (isPending) return;
+		toast.promise(
+			(async () => {
+				const res = await updateBookingStatus({ id, updatedStatus });
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Updating appointment status...",
+				success: "Appointment status updated ✅",
+				error: "Failed to update appointment status ❌",
+				position: "bottom-center",
+			},
+		);
 	};
 
 	return (
@@ -252,13 +264,13 @@ const AdminAppointmentsTab = () => {
 															<div>
 																{format(
 																	new Date(appointment?.datetime),
-																	"MMM d, yyyy"
+																	"MMM d, yyyy",
 																)}
 															</div>
 															<div className="text-sm text-neutral-300">
 																{format(
 																	new Date(appointment?.datetime),
-																	"h:mm a"
+																	"h:mm a",
 																)}
 															</div>
 														</div>
@@ -284,7 +296,7 @@ const AdminAppointmentsTab = () => {
 													<div>
 														{format(
 															new Date(appointment?.datetime),
-															"MMM d, yyyy"
+															"MMM d, yyyy",
 														)}
 													</div>
 													<div className="text-sm text-muted-foreground">

@@ -19,8 +19,20 @@ import Stats from "@/pages/Admin/Stats";
 import ValidatePage from "./ValidatePage";
 import Profile from "@/pages/Profile";
 import ProtectedRoutes from "./ProtectedRoutes";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import socket from "@/lib/socket";
+import ACPLayout from "./layout/ACPLayout";
 
 const AppContent = () => {
+	const { user } = useSelector((state) => state.auth);
+	useEffect(() => {
+		if (user) {
+			socket.connect();
+		} else {
+			socket.disconnect();
+		}
+	}, [user]);
 
 	return (
 		<>
@@ -39,10 +51,17 @@ const AppContent = () => {
 					<Route path="/booking" element={<Booking />} />
 					<Route path="/community" element={<Community />} />
 
-					<Route path="/admin" element={<AdminLayout />}>
+					<Route path="/admin" element={<ACPLayout />}>
 						<Route index element={<Navigate to="dashboard" replace />} />
 						<Route path="dashboard" element={<Dashboard />} />
-						<Route path="stats" element={<Stats />} />
+						<Route
+							path="stats"
+							element={
+								<AdminLayout>
+									<Stats />
+								</AdminLayout>
+							}
+						/>
 					</Route>
 				</Route>
 				<Route path="*" element={<NotFound />} />

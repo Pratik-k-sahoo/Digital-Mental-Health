@@ -10,6 +10,7 @@ import { Shield } from "lucide-react";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { EyeOff } from "lucide-react";
+import { Eye } from "lucide-react";
 
 const AnonymizationToggle = () => {
 	const { isAnonymized, setIsAnonymized } = useAnonymization();
@@ -31,6 +32,7 @@ const AnonymizationToggle = () => {
 							onCheckedChange={setIsAnonymized}
 						/>
 						{isAnonymized && <EyeOff className="h-4 w-4 text-primary" />}
+						{!isAnonymized && <Eye className="h-4 w-4 text-primary" />}
 					</div>
 				</TooltipTrigger>
 				<TooltipContent side="bottom" className="max-w-xs">

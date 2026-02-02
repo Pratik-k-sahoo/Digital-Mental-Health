@@ -26,7 +26,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
 	{ label: "Home", href: "/" },
 	{ label: "Assessments", href: "/assessments" },
-	{ label: "Resources", href: "/resources" },
 	{ label: "Book Appointment", href: "/booking" },
 ];
 
@@ -37,7 +36,6 @@ const Navbar = () => {
 	const [mobileMenu, setMobileMenu] = useState(false);
 
 	const handleLogout = async () => {
-		console.log("logging out");
 		dispatch(logout());
 		dispatch(resourceLogout());
 		navigate("/login", { replace: true });
@@ -132,6 +130,9 @@ const Navbar = () => {
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem className="focus:bg-sage" asChild>
+									<Link to={"/resources"}>Resource</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem className="focus:bg-sage" asChild>
 									<Link to={"/profile?tab=settings"}>Setting</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem
@@ -172,6 +173,9 @@ const Navbar = () => {
 										<Link to={"/profile?tab=history"}>Assessments</Link>
 									</DropdownMenuItem>
 								)}
+								<DropdownMenuItem className="focus:bg-sage" asChild>
+									<Link to={"/resources"}>Resource</Link>
+								</DropdownMenuItem>
 								<DropdownMenuItem className="focus:bg-sage" asChild>
 									<Link to={"/profile?tab=settings"}>Setting</Link>
 								</DropdownMenuItem>

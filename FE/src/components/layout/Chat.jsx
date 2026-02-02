@@ -1,14 +1,13 @@
+import { cn } from "@/lib/utils";
 import { MessageCircleMore } from "lucide-react";
 import React from "react";
 import { Link } from "react-router";
 
-const Chat = () => {
+const Chat = ({ className }) => {
 	return (
-		<div className="fixed bottom-0 right-0 mx-10 my-10 z-50 border rounded-full bg-sage/30 backdrop-blur-lg w-fit p-4 animate-bounce cursor-pointer">
-			<Link to="/chat">
-				<MessageCircleMore className="w-8 h-8 text-sage-dark" />
-			</Link>
-		</div>
+		<Link className={`${cn(className)} p-2 sm:p-3 md:p-4 delay-300`} to="/chat">
+			<MessageCircleMore className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-sage-dark" />
+		</Link>
 	);
 };
 

@@ -31,8 +31,7 @@ const ForgetPassword = () => {
 
 	const { mutate: forgetUser, isPending } = useAppMutation({
 		mutationFn: resetUser,
-		onSuccess: (data) => {
-			toast.success(data.message);
+		onSuccess: () => {
 			setOpen(false);
 		},
 		onError: (error) => {
@@ -41,7 +40,12 @@ const ForgetPassword = () => {
 	});
 
 	const handleReset = async (e) => {
-		await forgetUser(e);
+		toast.promise(forgetUser(e), {
+			loading: "Resetting password...",
+			success: "Password reset ✅",
+			error: "Failed to reset password ❌",
+			position: "bottom-center",
+		});
 	};
 
 	const togglePasswordType = () => {

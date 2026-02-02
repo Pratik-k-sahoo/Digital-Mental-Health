@@ -16,7 +16,7 @@ import {
 } from "@/pages";
 import ScrollToHash from "./components/ScrollToHash";
 import ConfirmBooking from "./pages/ConfirmBooking";
-import AdminLayout from "./components/layout/AdminLayout";
+import AdminLayout from "./components/layout/ACPLayout";
 import Dashboard from "./pages/Admin/Dashboard";
 import Stats from "./pages/Admin/Stats";
 import { queryClient } from "./lib/queryClient";
