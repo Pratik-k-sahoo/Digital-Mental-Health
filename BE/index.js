@@ -56,7 +56,7 @@ io.on("connection", (socket) => {
 		});
 	});
 
-  socket.on(EVENTS.TYPING_STOP, ({ postId }) => {
+	socket.on(EVENTS.TYPING_STOP, ({ postId }) => {
 		if (!postId) return;
 
 		socket.to(`post-${postId}`).emit(EVENTS.TYPING_STOP, {
@@ -120,6 +120,7 @@ async function start() {
 }
 
 start().catch((err) => {
+	console.log(err);
 	logger.error("Failed to start: ", err);
 	process.exit(1);
 });
