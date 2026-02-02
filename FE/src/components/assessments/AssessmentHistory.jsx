@@ -53,6 +53,23 @@ const AssessmentHistory = () => {
 		invalidateQueries: ["assessments", "history"],
 	});
 
+	const handleClearHistory = async () => {
+		toast.promise(
+			(async () => {
+				const res = await clearHistory();
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Clearing assessment history...",
+				success: "Assessment history cleared ✅",
+				error: "Failed to clear assessment history ❌",
+				position: "bottom-center",
+			},
+		);
+	};
+
 	const phq9History = data?.filter((h) => h?.type === "PHQ9");
 	const gad7History = data?.filter((h) => h?.type === "GAD7");
 
@@ -224,20 +241,7 @@ const AssessmentHistory = () => {
 							</DrawerHeader>
 							<DrawerFooter>
 								<Button
-									onClick={toast.promise(
-										(async () => {
-											const res = await clearHistory();
-											await sleep(1500);
-
-											return res;
-										})(),
-										{
-											loading: "Clearing assessment history...",
-											success: "Assessment history cleared ✅",
-											error: "Failed to clear assessment history ❌",
-											position: "bottom-center",
-										},
-									)}
+									onClick={handleClearHistory}
 									className="w-fit mx-auto cursor-pointer"
 								>
 									Submit
