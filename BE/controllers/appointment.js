@@ -84,7 +84,7 @@ async function bookAppointment(req, res) {
 		const [year, month, day] = date.split("-").map(Number);
 		const [hour, minute] = time.split(":").map(Number);
 
-		const datetime = new Date(year, month - 1, day, hour + 5, minute + 30);
+		const datetime = new Date(year, month, day, hour, minute);
 
 		const conflictingAppointment = await Appointment.findOne({
 			where: {
