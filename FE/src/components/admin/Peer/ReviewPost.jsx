@@ -38,7 +38,7 @@ const ReviewPost = ({ data }) => {
 	const form = useForm({
 		defaultValues: {
 			status: data?.status || "",
-			isLocked: data?.isLocked.toString() || "false",
+			isLocked: data?.isLocked?.toString() || "false",
 		},
 	});
 
