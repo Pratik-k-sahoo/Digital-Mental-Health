@@ -2,6 +2,7 @@ require("dotenv").config();
 const { where, Op, include } = require("sequelize");
 const { User, Appointment, CounsellorAvail } = require("../models");
 const generateTimeSlots = require("../utils/generateTimeSlots");
+const { inngest } = require("../inngest/client");
 
 async function getAvailableCounsellors(req, res) {
 	try {
@@ -45,7 +46,7 @@ async function getAvailableSlots(req, res) {
 		});
 
 		const bookedTimes = bookedAppointments?.map((app) =>
-			app?.dataValues?.datetime?.toISOString()?.substring(11, 16)
+			app?.dataValues?.datetime?.toISOString()?.substring(11, 16),
 		);
 
 		let slots = [];
@@ -54,8 +55,8 @@ async function getAvailableSlots(req, res) {
 				...generateTimeSlots(
 					slot?.dataValues?.startTime,
 					slot?.dataValues?.endTime,
-					slot?.dataValues?.slotDuration
-				)
+					slot?.dataValues?.slotDuration,
+				),
 			);
 		});
 
@@ -80,12 +81,12 @@ async function bookAppointment(req, res) {
 			return res.status(400).json({
 				message: "Choose a counsellor, date, time and appointment type to book",
 			});
-
+		console.log(date, time);
 		const [year, month, day] = date.split("-").map(Number);
 		const [hour, minute] = time.split(":").map(Number);
 
-		const datetime = new Date(year, month, day, hour, minute);
-
+		const datetime = new Date(year, month - 1, day + 1, hour, minute);
+		console.log(datetime);
 		const conflictingAppointment = await Appointment.findOne({
 			where: {
 				counsellorId,
@@ -111,6 +112,16 @@ async function bookAppointment(req, res) {
 
 		const qrUrl = `${process.env.FRONTEND_URL}/confirm-booking/${qrToken}`;
 
+		inngest
+			.send({
+				name: "appointment/booking.generated",
+				data: {
+					appointmentId: appointment.id,
+					url: qrUrl,
+				},
+			})
+			.catch(console.error);
+
 		return res.status(201).json({
 			message: "Appointment booked successfully",
 			appointment,
@@ -133,6 +144,15 @@ async function confirmAppointmentBooking(req, res) {
 	if (new Date() > appointment.qr_expiresAt) {
 		appointment.status = "expired";
 		await appointment.save();
+    inngest
+			.send({
+				name: "appointment/booking.confirmed",
+				data: {
+					appointmentId: appointment.id,
+					status: "expired",
+				},
+			})
+			.catch(console.error);
 		return res.status(410).json({ message: "QR Code has expired" });
 	}
 
@@ -151,6 +171,16 @@ async function confirmAppointmentBooking(req, res) {
 
 	appointment.status = "confirmed";
 	await appointment?.save();
+
+  inngest
+		.send({
+			name: "appointment/booking.confirmed",
+			data: {
+				appointmentId: appointment.id,
+				status: "confirmed",
+			},
+		})
+		.catch(console.error);
 
 	return res
 		.status(200)
@@ -261,7 +291,15 @@ async function updateAppointmentStatus(req, res) {
 
 		appointment.status = status;
 		await appointment.save();
-
+    inngest
+			.send({
+				name: "appointment/status.changed",
+				data: {
+					appointmentId: appointment.id,
+					status,
+				},
+			})
+			.catch(console.error);
 		return res.status(200).json({
 			message: "Appointment status updated successfully",
 			appointment,
@@ -286,6 +324,16 @@ async function cancelAppointment(req, res) {
 
 		appointment.status = "cancelled";
 		await appointment.save();
+
+    inngest
+			.send({
+				name: "appointment/booking.confirmed",
+				data: {
+					appointmentId: appointment.id,
+					status: "cancelled",
+				},
+			})
+			.catch(console.error);
 
 		return res.status(200).json({
 			message: "Appointment cancelled successfully",

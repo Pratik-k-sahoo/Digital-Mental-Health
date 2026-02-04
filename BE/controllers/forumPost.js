@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Sequelize, where } = require("sequelize");
 const { ForumPost, ForumComment, Flag, User } = require("../models");
 const { scanForCrisis } = require("../utils/helper");
+const { inngest } = require("../inngest/client");
 
 async function listPosts(req, res) {
 	try {
@@ -94,33 +95,33 @@ async function createPost(req, res) {
 			return res.status(400).json({ message: "Title and content required" });
 		}
 
-		const crisisDetected = scanForCrisis(content) || scanForCrisis(title);
-
 		const post = await ForumPost.create({
 			title,
 			content,
 			isAnonymous,
 			category,
 			authorId: user.id,
-			status: crisisDetected ? "flagged" : "visible",
+			status: "under_review",
 			displayName,
-			isLocked: crisisDetected ? true : false,
-			lockReason: crisisDetected ? "crisis_detected" : null,
+			isLocked: false,
+			lockReason: null,
 		});
 
-		if (crisisDetected) {
-			await Flag.create({
-				postId: post.id,
-				flaggedBy: user.id,
-				reason: "Crisis keywords detected",
-				reviewBatch: post.currentReviewBatch,
-			});
-		}
+		inngest
+			.send({
+				name: "forum/post.created",
+				data: {
+					postId: post.id,
+					authorId: user.id,
+				},
+			})
+			.catch(console.error);
 
 		res.status(201).json({
 			post,
 		});
 	} catch (error) {
+		console.log(error);
 		res.status(500).json({ message: "Server Error", error: error.message });
 	}
 }
@@ -207,8 +208,6 @@ async function editPost(req, res) {
 			return res.status(400).json({ message: "Title and content required" });
 		}
 
-		const crisisDetected = scanForCrisis(content) || scanForCrisis(title);
-
 		await ForumPost.update(
 			{
 				title,
@@ -216,22 +215,21 @@ async function editPost(req, res) {
 				isAnonymous,
 				category,
 				authorId: user.id,
-				status: crisisDetected ? "flagged" : "visible",
+				status: "under_review",
 				displayName,
 			},
 			{ where: { authorId, id } },
 		);
 
-		const post = await ForumPost.findByPk(id);
-		console.log(crisisDetected, post.currentReviewBatch);
-		if (crisisDetected) {
-			await Flag.create({
-				postId: id,
-				flaggedBy: user.id,
-				reason: "Crisis keywords detected",
-				reviewBatch: post.currentReviewBatch,
-			});
-		}
+		inngest
+			.send({
+				name: "forum/post.updated",
+				data: {
+					postId: id,
+					authorId: user.id,
+				},
+			})
+			.catch(console.error);
 
 		res.status(200).json({
 			message: "Post edited successfully",

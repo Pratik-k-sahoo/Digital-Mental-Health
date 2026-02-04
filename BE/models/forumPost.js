@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 				default: "Anonymous Student",
 			},
 			status: {
-				type: DataTypes.ENUM("visible", "hidden", "flagged"),
+				type: DataTypes.ENUM("visible", "hidden", "flagged", "under_review"),
 				allowNull: false,
 				defaultValue: "visible",
 			},

@@ -25,6 +25,16 @@ const { onUserSignup } = require("./inngest/function/on-signup");
 
 const logger = require("./utils/logger");
 const errorHandler = require("./middlewares/errorHandler");
+const { postCreated, postUpdated } = require("./inngest/function/forum-post");
+const {
+	flagCommentCreated,
+	flagPostCreated,
+} = require("./inngest/function/flag");
+const {
+	bookingGenerated,
+	bookingConfirmed,
+	bookingStatusChanged,
+} = require("./inngest/function/appointment");
 
 const app = express();
 const server = http.createServer(app);
@@ -86,14 +96,23 @@ app.use(cookieParser());
 app.use(
 	morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }),
 );
-app.use(express.json({limit: "4mb"}));
+app.use(express.json({ limit: "4mb" }));
 app.use(express.urlencoded({ extended: true }));
 // Inngest Entry Point
 app.use(
 	"/api/inngest",
 	serve({
 		client: inngest,
-		functions: [onUserSignup],
+		functions: [
+			onUserSignup,
+			postCreated,
+			postUpdated,
+			flagCommentCreated,
+			flagPostCreated,
+			bookingGenerated,
+			bookingConfirmed,
+			bookingStatusChanged,
+		],
 	}),
 );
 

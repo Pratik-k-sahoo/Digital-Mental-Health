@@ -1,3 +1,4 @@
+const { inngest } = require("../inngest/client");
 const { Flag, ForumPost, ForumComment } = require("../models");
 
 async function flagPost(req, res) {
@@ -26,24 +27,16 @@ async function flagPost(req, res) {
 			reviewBatch: post.currentReviewBatch,
 		});
 
-		const flagCount = await Flag.count({
-			where: {
-				postId: req.params.id,
-				status: "pending",
-				reviewBatch: post.currentReviewBatch,
-			},
-		});
-
-		if (flagCount >= 3) {
-			await ForumPost.update(
-				{
-					status: "flagged",
-					isLocked: true,
-					lockReason: "auto_flag",
+		inngest
+			.send({
+				name: "flag/post.created",
+				data: {
+					postId: req.params.id,
+					status: "pending",
+					reviewBatch: post.currentReviewBatch,
 				},
-				{ where: { id: req.params.id } },
-			);
-		}
+			})
+			.catch(console.error);
 
 		res.status(201).json({
 			message: "Post reported for review",
@@ -79,18 +72,16 @@ async function flagComment(req, res) {
 			reviewBatch: comment.currentReviewBatch,
 		});
 
-		const flagCount = await Flag.count({
-			where: { commentId: req.params.id },
-		});
-
-		if (flagCount >= 3) {
-			await ForumComment.update(
-				{
-					status: "flagged",
+		inngest
+			.send({
+				name: "flag/comment.created",
+				data: {
+					commentId: req.params.id,
+					status: "pending",
+					reviewBatch: comment.currentReviewBatch,
 				},
-				{ where: { id: req.params.id } },
-			);
-		}
+			})
+			.catch(console.error);
 
 		res.status(201).json({
 			message: "Comment reported for review",
