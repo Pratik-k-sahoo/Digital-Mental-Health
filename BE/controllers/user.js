@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const { User, AlertThreshold, Assessment, Appointment } = require("../models");
 const jwt = require("jsonwebtoken");
 const { where } = require("sequelize");
+const { inngest } = require("../inngest/client");
 
 async function register(req, res) {
 	try {
@@ -41,6 +42,11 @@ async function register(req, res) {
 		};
 		const token = jwt.sign(payload, process.env.JWT_SECRET, {
 			expiresIn: "1h",
+		});
+
+		const {} = await inngest.send({
+			name: "user/create",
+			data: { user: payload },
 		});
 
 		return res
@@ -301,7 +307,7 @@ async function updateUserDetails(req, res) {
 
 			const isMatch = await bcrypt.compare(
 				req.body.currentPassword,
-				user.password
+				user.password,
 			);
 
 			if (!isMatch) {

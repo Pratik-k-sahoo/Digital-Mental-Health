@@ -19,6 +19,9 @@ const appointment = require("./routes/appointment");
 const resources = require("./routes/resources");
 const adminDashboard = require("./routes/adminDashboard");
 const forum = require("./routes/forum");
+const { inngest } = require("./inngest/client");
+const { serve } = require("inngest/express");
+const { onUserSignup } = require("./inngest/function/on-signup");
 
 const logger = require("./utils/logger");
 const errorHandler = require("./middlewares/errorHandler");
@@ -83,8 +86,16 @@ app.use(cookieParser());
 app.use(
 	morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }),
 );
-app.use(express.json());
+app.use(express.json({limit: "4mb"}));
 app.use(express.urlencoded({ extended: true }));
+// Inngest Entry Point
+app.use(
+	"/api/inngest",
+	serve({
+		client: inngest,
+		functions: [onUserSignup],
+	}),
+);
 
 app.get("/api/health", (req, res) => {
 	const pool = sequelize.connectionManager.pool;
@@ -108,7 +119,7 @@ async function start() {
 	await testConnection();
 	logger.info("DB Connected.");
 
-	if (process.env.NODE_ENV === "development") {
+	if (process.env.NODE_ENV !== "development") {
 		await sequelize.sync({
 			alter: true,
 		});
