@@ -1,10 +1,12 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { Hourglass } from "lucide-react";
 import { Flag, EyeOff, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import React from "react";
 
 const STATUS = [
+	{ value: "under_review", label: "Under Review", icon: Hourglass, color: "bg-slate-500" },
 	{ value: "visible", label: "Visible", icon: Eye, color: "bg-green-500" },
 	{ value: "flagged", label: "Flagged", icon: Flag, color: "bg-yellow-500" },
 	{ value: "hidden", label: "Hidden", icon: EyeOff, color: "bg-red-500" },
