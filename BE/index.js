@@ -119,7 +119,7 @@ async function start() {
 	await testConnection();
 	logger.info("DB Connected.");
 
-	if (process.env.NODE_ENV !== "development") {
+	if (process.env.NODE_ENV === "development") {
 		await sequelize.sync({
 			alter: true,
 		});
