@@ -162,7 +162,7 @@ async function updatePostStatus(req, res) {
 	try {
 		const { status } = req.body;
 
-		if (!["visible", "hidden", "flagged"].includes(status)) {
+		if (!["visible", "hidden", "flagged", "under_review"].includes(status)) {
 			return res.status(400).json({ message: "Invalid status" });
 		}
 

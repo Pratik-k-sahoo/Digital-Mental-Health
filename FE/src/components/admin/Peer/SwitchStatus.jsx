@@ -24,8 +24,8 @@ const SwitchStatus = ({ value, onChange }) => {
 					)}
 					initial={false}
 					animate={{
-						x: activeIndex * 64 + 4,
-						width: 60,
+						x: activeIndex * 100 + 4,
+						width: 100,
 					}}
 					transition={{
 						type: "spring",
@@ -40,7 +40,7 @@ const SwitchStatus = ({ value, onChange }) => {
 					key={option.value}
 					onClick={() => onChange(option.value)}
 					className={cn(
-						"relative z-10 px-3 py-1 text-xs font-medium rounded-full transition-colors w-[60px]",
+						"relative z-10 px-3 py-1 text-xs font-medium rounded-full transition-colors w-[100px] text-center",
 						value === option.value
 							? "text-white"
 							: "text-muted-foreground hover:text-foreground",

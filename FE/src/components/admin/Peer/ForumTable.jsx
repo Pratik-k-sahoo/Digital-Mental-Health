@@ -41,6 +41,10 @@ const ForumTable = ({ post }) => {
 			setIsLocked(true);
 		}
 
+		if (nextStatus === "under_review") {
+			setIsLocked(true);
+		}
+
 		if (nextStatus === "visible") {
 			setIsLocked(post?.isLocked);
 		}
@@ -60,7 +64,7 @@ const ForumTable = ({ post }) => {
 			})(),
 			{
 				loading: "Updating discussion status...",
-				success: `Discussion is ${nextStatus} now`,
+				success: `Discussion is ${nextStatus === "under_review" ? "under review" : nextStatus} now`,
 				error: "Failed to update discussion status ❌",
 				position: "bottom-center",
 			},
