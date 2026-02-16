@@ -8,6 +8,9 @@ const {
 	ForumPost,
 	ForumComment,
 	Flag,
+	PeerApplication,
+	StepResponse,
+	AIEvaluation,
 } = require("../models");
 
 async function getOveriewStats(req, res) {
@@ -470,6 +473,60 @@ async function reviewCommentReport(req, res) {
 	}
 }
 
+async function fetchAppliedPeers(req, res) {
+	try {
+		const applications = await PeerApplication.findAll({
+			where: { isSubmitted: true, isDraft: false },
+			include: [StepResponse, User],
+		});
+
+		return res.status(200).json({
+			applications,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function fetchAIAnalysis(req, res) {
+	try {
+		const aiEvaluationResult = await AIEvaluation.findOne({
+			where: { applicationId: req.params.id },
+		});
+
+		return res.status(200).json({
+			result: aiEvaluationResult,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
+async function updatePeerApplicationStatus(req, res) {
+	try {
+		const application = await PeerApplication.findOne({
+			where: { id: req.params.id },
+		});
+		const status = req.params.status === "approve";
+		if (status) {
+			application.status = "approved";
+			await application.save();
+		} else {
+			application.status = "rejected";
+			await application.save();
+		}
+
+		return res.status(200).json({
+			application,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
 module.exports = {
 	getOveriewStats,
 	resourcesByCategory,
@@ -486,4 +543,7 @@ module.exports = {
 	getReportedComments,
 	reviewComment,
 	reviewCommentReport,
+	fetchAppliedPeers,
+	fetchAIAnalysis,
+	updatePeerApplicationStatus,
 };

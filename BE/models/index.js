@@ -14,6 +14,9 @@ const ForumCommentModel = require("./forumComment");
 const ForumLikeModel = require("./forumLike");
 const ForumBookmarkModel = require("./forumBookmark");
 const FlagModel = require("./flag");
+const PeerApplicationModel = require("./peerApplication");
+const StepResponseModel = require("./stepResponse");
+const AIEvaluationModel = require("./aiEvaluation");
 
 const User = UserModel(sequelize, DataTypes);
 const Assessment = AssessmentModel(sequelize, DataTypes);
@@ -27,6 +30,9 @@ const ForumComment = ForumCommentModel(sequelize, DataTypes);
 const ForumLike = ForumLikeModel(sequelize, DataTypes);
 const ForumBookmark = ForumBookmarkModel(sequelize, DataTypes);
 const Flag = FlagModel(sequelize, DataTypes);
+const PeerApplication = PeerApplicationModel(sequelize, DataTypes);
+const StepResponse = StepResponseModel(sequelize, DataTypes);
+const AIEvaluation = AIEvaluationModel(sequelize, DataTypes);
 
 //Assessment User Relationship
 User.hasMany(Assessment, {
@@ -246,6 +252,39 @@ ForumPost.belongsToMany(User, {
 	as: "BookmarkedBy",
 });
 
+PeerApplication.hasMany(StepResponse, {
+	foreignKey: "applicationId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+PeerApplication.belongsTo(User, {
+	foreignKey: "userId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+User.hasMany(PeerApplication, {
+	foreignKey: "userId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+
+StepResponse.belongsTo(PeerApplication, {
+	foreignKey: "applicationId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+
+PeerApplication.hasOne(AIEvaluation, {
+	foreignKey: "applicationId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+AIEvaluation.belongsTo(PeerApplication, {
+	foreignKey: "applicationId",
+	onDelete: "CASCADE",
+	onUpdate: "CASCADE",
+});
+
 module.exports = {
 	User,
 	Assessment,
@@ -259,4 +298,7 @@ module.exports = {
 	ForumLike,
 	ForumBookmark,
 	Flag,
+	PeerApplication,
+	StepResponse,
+  AIEvaluation
 };

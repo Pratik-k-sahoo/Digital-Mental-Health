@@ -13,6 +13,9 @@ const {
 	reviewComment,
 	reviewCommentReport,
 	getAllPosts,
+	fetchAppliedPeers,
+	fetchAIAnalysis,
+  updatePeerApplicationStatus,
 } = require("../controllers/adminDashboard");
 const router = express.Router();
 
@@ -61,6 +64,21 @@ router.patch(
 	"/reported-comments/:id/review",
 	requireRole("admin", "counsellor", "peer_volunteer"),
 	reviewCommentReport,
+);
+router.get(
+	"/applied-peers",
+	requireRole("admin", "counsellor"),
+	fetchAppliedPeers,
+);
+router.get(
+	"/ai-analysis/:id",
+	requireRole("admin", "counsellor"),
+	fetchAIAnalysis,
+);
+router.patch(
+	"/applied-peer/:id/review/:status",
+	requireRole("admin", "counsellor"),
+	updatePeerApplicationStatus,
 );
 
 module.exports = router;

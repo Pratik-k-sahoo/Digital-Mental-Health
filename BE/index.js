@@ -19,6 +19,7 @@ const appointment = require("./routes/appointment");
 const resources = require("./routes/resources");
 const adminDashboard = require("./routes/adminDashboard");
 const forum = require("./routes/forum");
+const volunteer = require("./routes/volunteer");
 const { inngest } = require("./inngest/client");
 const { serve } = require("inngest/express");
 const { onUserSignup } = require("./inngest/function/on-signup");
@@ -35,6 +36,10 @@ const {
 	bookingConfirmed,
 	bookingStatusChanged,
 } = require("./inngest/function/appointment");
+const {
+	peerApplicationAutoReject,
+	peerApplicationSubmitted,
+} = require("./inngest/function/peer");
 
 const app = express();
 const server = http.createServer(app);
@@ -112,6 +117,8 @@ app.use(
 			bookingGenerated,
 			bookingConfirmed,
 			bookingStatusChanged,
+			peerApplicationAutoReject,
+			peerApplicationSubmitted,
 		],
 	}),
 );
@@ -131,6 +138,7 @@ app.use("/api/appointment", appointment);
 app.use("/api/resource", resources);
 app.use("/api/admin/dashboard", adminDashboard);
 app.use("/api/forum", forum);
+app.use("/api/volunteer", volunteer);
 
 app.use(errorHandler);
 
@@ -138,7 +146,7 @@ async function start() {
 	await testConnection();
 	logger.info("DB Connected.");
 
-	if (process.env.NODE_ENV === "development") {
+	if (process.env.NODE_ENV !== "development") {
 		await sequelize.sync({
 			alter: true,
 		});
