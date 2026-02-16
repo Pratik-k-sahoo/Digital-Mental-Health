@@ -18,7 +18,7 @@ import {
 	ThumbsUp,
 } from "lucide-react";
 import useGetQuery from "@/hooks/useGetQuery";
-import { getAllPosts } from "@/lib/apiServices";
+import { getAllPosts, getPeerApplication } from "@/lib/apiServices";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -30,6 +30,10 @@ import { Loader2 } from "lucide-react";
 import CreateForum from "@/components/community/CreateForum";
 import DiscussionDialog from "@/components/community/DiscussionDialog";
 import socket from "@/lib/socket";
+import PeerApplication from "@/components/community/PeerApplication";
+import { CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Clock } from "lucide-react";
 
 const EVENTS = {
 	JOIN_POST: "join-post",
@@ -59,6 +63,17 @@ const Community = () => {
 	const [selectedDiscussion, setSelectedDiscussion] = useState(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [page, setPage] = useState(1);
+	const {
+		data: peerApplication,
+		isLoading,
+		isError,
+		error,
+	} = useGetQuery({
+		queryKey: ["peer-application"],
+		queryFn: () => getPeerApplication(),
+		staleTime: 5 * 60 * 1000,
+		cacheTime: 10 * 60 * 1000,
+	});
 
 	const {
 		data: posts,
@@ -170,9 +185,52 @@ const Community = () => {
 									Trained student volunteers help moderate discussions and
 									provide peer support.
 								</CardDescription>
-								<Button variant="hero" size="sm" className="w-full">
-									Apply Now
-								</Button>
+								{!user ? (
+									<p className="text-sm text-muted-foreground">
+										Sign in to apply
+									</p>
+								) : user?.role === "peer_volunteer" ? (
+									<div className="flex items-center gap-2 text-sm text-primary">
+										<CheckCircle className="h-4 w-4" />
+										<span>You're a peer supporter!</span>
+									</div>
+								) : peerApplication?.isDraft ? (
+									<PeerApplication
+										data={peerApplication}
+										title="Resume Application"
+									/>
+								) : peerApplication?.status && peerApplication ? (
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<Badge
+												variant={
+													peerApplication?.status === "approved"
+														? "default"
+														: peerApplication?.status === "rejected"
+															? "destructive"
+															: "secondary"
+												}
+											>
+												{peerApplication?.status === "submitted" && (
+													<Clock className="h-3 w-3 mr-1" />
+												)}
+												{peerApplication?.status?.charAt(0).toUpperCase() +
+													peerApplication?.status?.slice(1)}
+											</Badge>
+										</div>
+										<p className="text-xs text-muted-foreground">
+											Applied{" "}
+											{formatDistanceToNow(
+												new Date(peerApplication?.updatedAt),
+												{
+													addSuffix: true,
+												},
+											)}
+										</p>
+									</div>
+								) : (
+									<PeerApplication data={peerApplication} title="Apply Now" />
+								)}
 							</CardContent>
 						</Card>
 					</div>

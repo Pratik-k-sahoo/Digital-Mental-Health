@@ -1,5 +1,4 @@
 import { redirect } from "react-router";
-import { toast } from "sonner";
 import api from "./axiosBase";
 
 export async function createUser(credentials) {
@@ -920,6 +919,141 @@ export async function getPosts() {
 			throw new Error(response?.data?.message || "Failed to fetch the posts.");
 		}
 		return response?.data?.posts;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function getPeerApplication(id) {
+	try {
+		const response = await api.get(
+			`/${import.meta.env.VITE_VOLUNTEER_URL}/${id}`,
+		);
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to fetch the application.",
+			);
+		}
+		return response?.data?.application || [];
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function createPeerApplication() {
+	try {
+		const response = await api.post(`/${import.meta.env.VITE_VOLUNTEER_URL}`);
+		if (response?.status !== 201) {
+			throw new Error(
+				response?.data?.message || "Failed to create the application.",
+			);
+		}
+		return response?.data?.application;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function saveApplicationStep({
+	applicationId,
+	stepNumber,
+	credentials,
+}) {
+	try {
+		const response = await api.put(
+			`/${import.meta.env.VITE_VOLUNTEER_URL}/${applicationId}/step/${stepNumber}`,
+			credentials,
+		);
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to save the application.",
+			);
+		}
+		return response?.data?.application;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function submitApplication({ applicationId }) {
+	try {
+		const response = await api.post(
+			`/${import.meta.env.VITE_VOLUNTEER_URL}/${applicationId}/submit`,
+		);
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to submit the application.",
+			);
+		}
+		return response?.data?.message;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function cancelApplication({ applicationId }) {
+	try {
+		const response = await api.delete(
+			`/${import.meta.env.VITE_VOLUNTEER_URL}/${applicationId}`,
+		);
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to cancel the application.",
+			);
+		}
+		return response?.data?.message;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function fetchAppliedPeers() {
+	try {
+		const response = await api.get(
+			`/${import.meta.env.VITE_ADMIN_URL}/applied-peers`,
+			{},
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to fetch applied peers",
+			);
+		}
+		return response?.data?.applications;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function fetchAIAnalysis(id) {
+	try {
+		const response = await api.get(
+			`/${import.meta.env.VITE_ADMIN_URL}/ai-analysis/${id}`,
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to analyse application",
+			);
+		}
+		return response?.data?.result;
+	} catch (error) {
+		throw new Error(error || "Something went wrong.");
+	}
+}
+
+export async function updatePeerApplicationStatus({ id, status }) {
+	try {
+		const response = await api.patch(
+			`/${import.meta.env.VITE_ADMIN_URL}/applied-peer/${id}/review/${status}`,
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(
+				response?.data?.message || "Failed to update application status",
+			);
+		}
+		return response?.data?.application;
 	} catch (error) {
 		throw new Error(error || "Something went wrong.");
 	}
