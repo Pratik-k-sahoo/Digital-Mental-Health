@@ -513,6 +513,14 @@ async function updatePeerApplicationStatus(req, res) {
 		if (status) {
 			application.status = "approved";
 			await application.save();
+			await User.update(
+				{
+					role: "peer_volunteer",
+				},
+				{
+					where: { id: application.userId },
+				},
+			);
 		} else {
 			application.status = "rejected";
 			await application.save();
