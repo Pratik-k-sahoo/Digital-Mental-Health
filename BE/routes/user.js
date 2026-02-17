@@ -7,7 +7,8 @@ const {
 	getMe,
 	updateAlertThreshold,
 	updateUserDetails,
-  forgetPassword,
+	forgetPassword,
+	updateUserRole,
 } = require("../controllers/user");
 const {
 	regstrationSchema,
@@ -26,7 +27,8 @@ router.patch(
 	"/threshold",
 	authMiddleware,
 	requireRole("admin", "counsellor"),
-	updateAlertThreshold
+	updateAlertThreshold,
 );
+router.patch("/:id/role", authMiddleware, requireRole("admin"), updateUserRole);
 
 module.exports = router;

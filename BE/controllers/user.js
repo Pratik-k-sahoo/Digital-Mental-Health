@@ -348,6 +348,28 @@ async function updateUserDetails(req, res) {
 	}
 }
 
+async function updateUserRole(req, res) {
+	try {
+		const { role } = req.body;
+
+		if (!["admin", "student", "counsellor", "peer_volunteer"].includes(role)) {
+			return res.status(400).json({ message: "Invalid role" });
+		}
+
+		const user = await User.findByPk(req.params.id);
+		if (!user) return res.status(404).json({ message: "User not found" });
+
+		user.role = role;
+		await user.save();
+
+		return res.status(200).json({
+			user,
+		});
+	} catch (error) {
+		res.status(500).json({ message: "Server Error", error: error.message });
+	}
+}
+
 module.exports = {
 	register,
 	login,
@@ -356,4 +378,5 @@ module.exports = {
 	updateAlertThreshold,
 	updateUserDetails,
 	forgetPassword,
+	updateUserRole,
 };
