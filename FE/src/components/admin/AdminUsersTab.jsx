@@ -23,14 +23,20 @@ import { format } from "date-fns";
 import { Badge } from "../ui/badge";
 import { Link } from "react-router";
 import useGetQuery from "@/hooks/useGetQuery";
-import { fetchAllUsers } from "@/lib/apiServices";
+import { fetchAllUsers, updateUserRole } from "@/lib/apiServices";
 import AnonymizationToggle from "./AnonymizationToggle";
 import useAnonymization from "@/hooks/useAnonymization";
 import { UserCheck } from "lucide-react";
 import { MailCheck } from "lucide-react";
 import { CircleCheckBig } from "lucide-react";
+import SwitchRole from "./SwitchRole";
+import useAppMutation from "@/hooks/useAppMutation";
+import { toast } from "sonner";
+import { sleep } from "@/lib/utils";
+import { useSelector } from "react-redux";
 
 const AdminUsersTab = () => {
+	const { user: current } = useSelector((state) => state.auth);
 	const [searchQuery, setSearchQuery] = useState("");
 	const { anonymizeEmail, anonymizeName } = useAnonymization();
 	const {
@@ -44,6 +50,48 @@ const AdminUsersTab = () => {
 		staleTime: 5 * 60 * 1000,
 		cacheTime: 10 * 60 * 1000,
 	});
+
+	const { mutateAsync: userRoleUpdateAsync, isPending: userRoleUpdatePending } =
+		useAppMutation({
+			mutationFn: updateUserRole,
+			invalidateQueries: {
+				queryKey: ["adminDashboard", "users"],
+			},
+		});
+
+	const handleRoleChange = async (role, id) => {
+		if (userRoleUpdatePending) return;
+		if (role === "admin") {
+			const confirmed = window.confirm(
+				"Are you sure you want to upgrade the user's role to admin?",
+			);
+			if (!confirmed) return;
+		} else if (role === "peer_volunteer") {
+			const confirmed = window.confirm(
+				"Are you sure you want to upgrade the user's role to peer volunteer?",
+			);
+			if (!confirmed) return;
+		}
+		toast.promise(
+			(async () => {
+				const res = await userRoleUpdateAsync({
+					role: {
+						role,
+					},
+					id,
+				});
+				await sleep(1500);
+
+				return res;
+			})(),
+			{
+				loading: "Updating user's role...",
+				success: `User is ${role === "peer_volunteer" ? "volunteer" : role} now`,
+				error: "Failed to update user's role ❌",
+				position: "bottom-center",
+			},
+		);
+	};
 
 	if (isError) {
 		return (
@@ -97,7 +145,7 @@ const AdminUsersTab = () => {
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader className="hidden sm:table-header-group">
+							<TableHeader className="hidden md:table-header-group">
 								<TableRow>
 									<TableHead className="font-bold text-base">Name</TableHead>
 									<TableHead className="font-bold text-base">Email</TableHead>
@@ -118,14 +166,14 @@ const AdminUsersTab = () => {
 								) : (
 									filteredUsers?.map((user) => (
 										<TableRow key={user?.id}>
-											<TableCell className="font-medium sm:hidden">
+											<TableCell className="font-medium md:hidden">
 												<div
 													className={`space-y-1.5 p-2 rounded-2xl ${
 														user?.role === "admin"
 															? "bg-destructive text-white"
 															: user?.role === "counsellor"
-															? "bg-primary text-primary-foreground"
-															: "bg-secondary text-secondary-foreground"
+																? "bg-primary text-primary-foreground"
+																: "bg-secondary text-secondary-foreground"
 													}`}
 												>
 													<span className="flex justify-center underline underline-offset-2 font-bold">
@@ -143,34 +191,41 @@ const AdminUsersTab = () => {
 														<CircleCheckBig />
 														{format(
 															new Date(user?.createdAt?.replace(" ", "T")),
-															"MMM d, yyyy"
+															"MMM d, yyyy",
 														)}
 													</div>
 												</div>
 											</TableCell>
-											<TableCell className="hidden sm:table-cell">
+											<TableCell className="hidden md:table-cell">
 												{anonymizeName(user?.name) || "Not set"}
 											</TableCell>
-											<TableCell className="hidden sm:table-cell">
+											<TableCell className="hidden md:table-cell">
 												{anonymizeEmail(user?.email) || "N/A"}
 											</TableCell>
-											<TableCell className="hidden sm:table-cell">
-												<Badge
-													variant={
-														user?.role === "admin"
-															? "destructive"
-															: user?.role === "counsellor"
-															? "default"
-															: "secondary"
-													}
-												>
-													{user?.role || "user"}
-												</Badge>
+											<TableCell className="hidden md:table-cell">
+												{current?.role === "admin" ? (
+													<SwitchRole
+														value={user}
+														onChange={handleRoleChange}
+													/>
+												) : (
+													<Badge
+														variant={
+															user?.role === "admin"
+																? "destructive"
+																: user?.role === "counsellor"
+																	? "default"
+																	: "secondary"
+														}
+													>
+														{user?.role || "user"}
+													</Badge>
+												)}
 											</TableCell>
-											<TableCell className="text-muted-foreground hidden sm:table-cell">
+											<TableCell className="text-muted-foreground hidden md:table-cell">
 												{format(
 													new Date(user?.createdAt?.replace(" ", "T")),
-													"MMM d, yyyy"
+													"MMM d, yyyy",
 												)}
 											</TableCell>
 										</TableRow>

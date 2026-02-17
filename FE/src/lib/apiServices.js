@@ -63,6 +63,27 @@ export async function updateUser(credentials) {
 	}
 }
 
+export async function updateUserRole({ id, role }) {
+	try {
+		const response = await api.patch(
+			`/${import.meta.env.VITE_USER_URL}/${id}/role`,
+			role,
+		);
+
+		if (response?.status !== 200) {
+			throw new Error(response?.data?.message || "Failed to update the role.");
+		}
+		return response?.data?.user;
+	} catch (error) {
+		throw new Error(
+			error?.response?.data?.message ||
+				error?.data?.message ||
+				error?.message ||
+				"Something went wrong.",
+		);
+	}
+}
+
 export async function resetUser(credentials) {
 	try {
 		const response = await api.post(
